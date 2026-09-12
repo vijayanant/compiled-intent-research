@@ -1,0 +1,105 @@
+#!/bin/bash
+
+# Force strict error handling
+set -euo pipefail
+
+echo "================================================="
+echo "  STARTING FULL 4x3 BENCHMARK SUITE (12 TESTS)   "
+echo "================================================="
+
+# Move to the ArchEval root directory so paths work reliably
+cd "$(dirname "$0")/.."
+
+# 1. Virtual Environment Auto-Activation
+if [ -z "${VIRTUAL_ENV:-}" ]; then
+    if [ -f ".venv/bin/activate" ]; then
+        source .venv/bin/activate
+    else
+        echo "Error: Virtual environment (.venv) not found. Run ./setup.sh first." >&2
+        exit 1
+    fi
+fi
+
+# 2. Check inspect CLI
+if ! command -v inspect &> /dev/null; then
+    echo "Error: 'inspect' CLI not found. Please activate your environment or run ./setup.sh." >&2
+    exit 1
+fi
+
+# 3. Check intent CLI (fall back to release build if present)
+if ! command -v intent &> /dev/null; then
+    LOCAL_INTENT="../../compiled-intent/target/release"
+    if [ -f "$LOCAL_INTENT/intent" ]; then
+        export PATH="$(cd "$LOCAL_INTENT" && pwd):$PATH"
+    else
+        echo "Error: 'intent' binary not found on PATH or in $LOCAL_INTENT." >&2
+        echo "Please build the engine with 'cargo build --release' inside compiled-intent." >&2
+        exit 1
+    fi
+fi
+
+# 4. Ollama Service & Models Pre-Flight Verification
+if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
+    echo "Error: Ollama server is not reachable at http://localhost:11434." >&2
+    echo "Please launch Ollama with 'ollama serve' before running benchmarks." >&2
+    exit 1
+fi
+
+MODEL="${1:-ollama/qwen2.5-coder:14b}"
+echo "Target Model: $MODEL"
+
+OLLAMA_MODELS=$(curl -s http://localhost:11434/api/tags)
+CLEAN_MODEL_NAME="${MODEL#ollama/}"
+if ! echo "$OLLAMA_MODELS" | grep -q "$CLEAN_MODEL_NAME"; then
+    echo "Notice: Model '$CLEAN_MODEL_NAME' not found in Ollama. Pulling..."
+    ollama pull "$CLEAN_MODEL_NAME"
+fi
+
+if ! echo "$OLLAMA_MODELS" | grep -q "nomic-embed-text"; then
+    echo "Notice: Embedding model 'nomic-embed-text' not found in Ollama. Pulling..."
+    ollama pull nomic-embed-text
+fi
+
+# 5. Database Pre-Flight (Auto-Index if missing or requested)
+if [ ! -d ".intent_akshara_db" ] || [ "${2:-}" == "--reindex" ] || [ "${1:-}" == "--reindex" ]; then
+    echo "Initializing and indexing Akshara specifications into LanceDB..."
+    intent --config config/akshara_config.toml index datasets/akshara_specs
+fi
+
+# 6. Teardown: Clean up old run logs to ensure clean matrix evaluation
+echo "Cleaning up stale eval logs for $MODEL..."
+# Note: we keep logs directory ready
+mkdir -p logs
+
+echo "-------------------------------------------------"
+echo "1/4: ZERO CONTEXT (The Blind LLM)"
+echo "-------------------------------------------------"
+inspect eval tasks/eval_zero_context.py@zero_context_pr_audit --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_zero_context.py@zero_context_adversarial --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_zero_context.py@zero_context_trivia --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+
+echo "-------------------------------------------------"
+echo "2/4: PROMPT STUFFING (The Kitchen Sink)"
+echo "-------------------------------------------------"
+inspect eval tasks/eval_prompt_stuffing.py@stuffing_pr_audit --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_prompt_stuffing.py@stuffing_adversarial --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_prompt_stuffing.py@stuffing_trivia --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+
+echo "-------------------------------------------------"
+echo "3/4: RAG INTERCEPTOR (The Surgical Search)"
+echo "-------------------------------------------------"
+inspect eval tasks/eval_rag_interceptor.py@rag_pr_audit --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_rag_interceptor.py@rag_adversarial --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_rag_interceptor.py@rag_trivia --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+
+echo "-------------------------------------------------"
+echo "4/4: ORACLE RAG (The Theoretical Maximum)"
+echo "-------------------------------------------------"
+inspect eval tasks/eval_oracle_rag.py@oracle_pr_audit --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_oracle_rag.py@oracle_adversarial --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+inspect eval tasks/eval_oracle_rag.py@oracle_trivia --model "$MODEL" -T 0 --max-connections 10 --log-dir logs
+
+echo "================================================="
+echo "Benchmarks complete. Generating final 4x3 matrix:"
+echo "================================================="
+python3 scripts/parse_results.py "$MODEL"

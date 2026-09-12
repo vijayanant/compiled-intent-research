@@ -1,0 +1,4 @@
+inspect_ai
+lancedb
+openai
+ollama

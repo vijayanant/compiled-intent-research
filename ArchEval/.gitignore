@@ -1,0 +1,15 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Vector Databases
+.chronicle*/
+!.chronicle_placeholder # keep tracking if we want
+
+# Logs
+logs/*.eval
+logs/*.json
+
+# macOS
+.DS_Store

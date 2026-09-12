@@ -1,0 +1,233 @@
+[
+  {
+    "id": "arbitrary_01",
+    "input": "What is the specific Multicodec prefix assigned to the 'Sovereign Manifest' in the CIDv1 structure?",
+    "choices": [
+      "0x51",
+      "0x50",
+      "0x71",
+      "0x12"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_02",
+    "input": "In the event of a causal conflict, which derivation branch takes absolute precedence according to the Legislative Primacy rule?",
+    "choices": [
+      "m/0'",
+      "m/1'",
+      "m/44'/0'/",
+      "m/2'"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_03",
+    "input": "What specific block type is defined by the Akshara Governance specification for formally transferring graph ownership?",
+    "choices": [
+      "akshara.succession.v1",
+      "sovereign.handover.v2",
+      "akshara.ownership.v1",
+      "sovereign.transfer.v1"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_04",
+    "input": "What is the exact byte value of the Multihash component code reserved for SHA2-256 in the Akshara CID specification?",
+    "choices": [
+      "0x12",
+      "0x20",
+      "0x01",
+      "0x50"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_05",
+    "input": "In the Tiered Identity Model, what is the specific architectural purpose of the 'Branch 2' deterministic path?",
+    "choices": [
+      "Stateless encryption key derivation",
+      "Discovery metadata broadcasting",
+      "Executive graph signing",
+      "Hardware wallet backup seed recovery"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_06",
+    "input": "To maintain 'Metadata Privacy' against the Relay, what specific element is mandated to generate the DiscoveryId?",
+    "choices": [
+      "MasterSeed",
+      "Keyring Secret",
+      "Ephemeral Branch m/3",
+      "Sovereign Manifest hash"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_07",
+    "input": "What is the exact length of the raw digest bytes in a standard SHA-256 Sovereign Block CID wire format, as defined in Byte 3?",
+    "choices": [
+      "32 bytes",
+      "36 bytes",
+      "64 bytes",
+      "16 bytes"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_08",
+    "input": "According to the 'Hive Invariant' in the Identity ADR, what must all authorized credentials share to enable multi-device resource decryption?",
+    "choices": [
+      "Keyring Secret",
+      "MasterSeed",
+      "Branch 0' Root Key",
+      "Succession Block CID"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_09",
+    "input": "What is the exact byte index in a Sovereign Block CID wire format where the Multihash type (e.g., SHA2-256) is defined?",
+    "choices": [
+      "Byte 2",
+      "Byte 1",
+      "Byte 0",
+      "Byte 3"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arbitrary_10",
+    "input": "Which of the following governance patterns is explicitly defined in the Akshara spec for group graphs requiring a signature threshold?",
+    "choices": [
+      "Collective Ownership",
+      "Institutional Stewardship",
+      "Individual Agency",
+      "Multi-Sig Hegemony"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "mcq_03",
+    "input": "A team adds a `#[collection]` field to their document to hold a list of comments. What indexing strategy does Akshara use for this collection and why?",
+    "choices": [
+      "C) Fractional indexing, because it preserves insertion order without re-CIDing siblings when a new item is inserted.",
+      "B) UUID-based indexing to ensure global uniqueness.",
+      "D) Hash-based indexing to prevent duplicate comments.",
+      "A) Array-index-based (0, 1, 2) to maintain strict serialization order."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "mcq_04",
+    "input": "When defining an `AksharaDocument`, what block type is assigned to the chunks and the sub-index of a `#[chunked]` field?",
+    "choices": [
+      "D) Both Chunks and Sub-Index are `AksharaDataV1`",
+      "A) Chunks: `AksharaDataV1`, Sub-Index: `AksharaIndexV1`",
+      "B) Chunks: `AksharaIndexV1`, Sub-Index: `AksharaDataV1`",
+      "C) Chunks: `AksharaBlobV1`, Sub-Index: `AksharaTreeV1`"
+    ],
+    "target": "B"
+  },
+  {
+    "id": "mcq_05",
+    "input": "An attacker attempts to create a document with a path containing the characters `..` to exploit path traversal. How does the Akshara SDK handle this?",
+    "choices": [
+      "B) It returns an `Error::InvalidPath` because paths must not contain relative path segments.",
+      "C) It encrypts the `..` characters so they are harmless.",
+      "D) It allows the path but isolates the document in a virtual sandbox.",
+      "A) It sanitizes the path by removing the `..` characters."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "mcq_10",
+    "input": "Which specific reserved key is used to store the schema block at the document root?",
+    "choices": [
+      "B) `.akshara.layout`",
+      "C) `meta/schema`",
+      "D) `.schema.v1`",
+      "A) `.akshara.schema`"
+    ],
+    "target": "D"
+  },
+  {
+    "id": "mcq_16",
+    "input": "For a `#[block]` annotated field, what is the default block type used when flushing to disk?",
+    "choices": [
+      "A) `AksharaIndexV1`",
+      "B) `AksharaDataV1`",
+      "D) `AksharaManifestV1`",
+      "C) `AksharaBlobV1`"
+    ],
+    "target": "B"
+  },
+  {
+    "id": "mcq_19",
+    "input": "If a developer uses `insert()` to write raw bytes directly instead of `insert_document()`, what critical piece of metadata will NOT be automatically written?",
+    "choices": [
+      "B) The `.akshara.schema` block",
+      "D) The user's private key",
+      "C) The Relay configuration file",
+      "A) The network timestamp"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_new_01",
+    "input": "According to the Akshara Cryptography ADR, which cipher is explicitly mandated for all content block encryption on mobile devices?",
+    "choices": [
+      "XChaCha20-Poly1305",
+      "AES-256-GCM",
+      "AES-256-SIV",
+      "HPKE with secp256k1"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_new_03",
+    "input": "What mechanism does the Akshara Synchronization Protocol use to resolve chronological ordering of offline events?",
+    "choices": [
+      "Hybrid Logical Clocks (HLC)",
+      "Unix Epoch Timestamps in milliseconds",
+      "Vector Clocks synced via a central Timestamp Authority",
+      "TrueTime API intervals"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_new_04",
+    "input": "According to the Tiered Identity ADR, which derivation path branch is reserved exclusively for the Executive Role?",
+    "choices": [
+      "m/1'/",
+      "m/44'/0'/",
+      "BRANCH_LEGISLATOR",
+      "The unhardened m/2/ branch"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_new_05",
+    "input": "What is the maximum allowed nesting depth for the GraphWalker during JSON traversal to prevent stack exhaustion?",
+    "choices": [
+      "256 segments",
+      "32 segments",
+      "Unbounded (Tail-Call Optimization is mandated)",
+      "128 segments"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_new_07",
+    "input": "To prevent timing attacks on manifest decryption, what technique does the Cryptography ADR mandate?",
+    "choices": [
+      "Constant-time memory comparisons for the MAC tag verification",
+      "Randomized delay padding injected before returning ciphertexts",
+      "Offloading all decryption routines to a hardware enclave (TEE)",
+      "Using fixed-length padding (PKCS#7) for all payloads"
+    ],
+    "target": "A"
+  }
+]

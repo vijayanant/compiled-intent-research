@@ -1,0 +1,178 @@
+[
+  {
+    "id": "trap_01_crypto",
+    "input": "A developer submits a PR to encrypt block content using AES-256-GCM.\n\n```rust\npub fn encrypt_block(plaintext: &[u8], key: &[u8]) -> Vec<u8> {\n    let cipher = Aes256Gcm::new(key.into());\n    cipher.encrypt(nonce, plaintext).unwrap()\n}\n```",
+    "choices": [
+      "FAIL: The Akshara Data Nodes spec strictly mandates the use of XChaCha20-Poly1305 for all content encryption.",
+      "FAIL: The Akshara Cryptography ADR strictly mandates AES-256-SIV to prevent nonce reuse vulnerabilities during block encryption.",
+      "FAIL: The Akshara Relay specification requires the Noise Protocol Framework (IK pattern) for all symmetric payload encryption.",
+      "FAIL: The Akshara Core Architecture mandates HPKE (Hybrid Public Key Encryption) over secp256k1 for all raw content."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_03_time",
+    "input": "A developer implements a conflict resolution handler that picks the newest file based on Unix timestamps.\n\n```rust\npub fn resolve_conflict(m1: Manifest, m2: Manifest) -> Manifest {\n    if m1.unix_timestamp > m2.unix_timestamp { m1 } else { m2 }\n}\n```",
+    "choices": [
+      "FAIL: Physical time is fundamentally unreliable in decentralized networks; Akshara conflict resolution MUST rely purely on Causal Consistency.",
+      "FAIL: The Akshara Governance ADR requires the use of TrueTime API with atomic GPS clocks to guarantee strict chronological ordering.",
+      "FAIL: The Akshara Reconciliation spec mandates Hybrid Logical Clocks (HLC) to combine physical timestamps with causal counters.",
+      "FAIL: The Akshara Sync Protocol requires a centralized Timestamp Authority (TSA) to cryptographically notarize all chronological merges."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_04_depth",
+    "input": "To support importing massively nested JSON structures, a developer removes the depth limit from the GraphWalker.\n\n```rust\npub struct GraphWalker {\n    pub fn new() -> Self { Self {} }\n}\n```",
+    "choices": [
+      "FAIL: The spec mandates a strict maximum depth limit of 256 segments to prevent stack exhaustion and DoS attacks during traversal.",
+      "FAIL: The Akshara GraphWalker constraint mandates iterative breadth-first traversal (BFS) over recursion to strictly bound memory consumption.",
+      "FAIL: The Akshara Graph Model ADR requires a Tail-Call Optimized (TCO) GraphWalker that supports mathematically unbounded recursion safely.",
+      "FAIL: The Akshara Core Architecture mandates a strict depth limit of 32 segments, rejecting deeply nested JSON structures immediately."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_06_branching",
+    "input": "A developer uses the high-privileged Legislator branch to sign daily data manifests.\n\n```rust\npub fn sign_manifest(&self, data: &[u8]) -> Signature {\n    let key = self.derive_hardened(BRANCH_LEGISLATOR);\n    key.sign(data)\n}\n```",
+    "choices": [
+      "FAIL: The `BRANCH_LEGISLATOR` path is strictly reserved for identity management. Data signatures MUST use `BRANCH_EXECUTIVE` (`m/1'/`).",
+      "FAIL: The Akshara Tiered Identity ADR mandates that all cryptographic signatures use the unhardened Tier 3 Secret branch to preserve root anonymity.",
+      "FAIL: The Akshara Derivation specification requires all manifest signatures to use a randomized ephemeral branch derived via HKDF.",
+      "FAIL: The Akshara Authority spec states that data signatures must utilize a 2-of-3 multisig comprising branches m/1, m/2, and m/3."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_08_entropy",
+    "input": "A developer creates a fast-onboarding flow that generates 12-word seed phrases.\n\n```rust\npub fn generate_fast_identity() -> Mnemonic {\n    Mnemonic::new(MnemonicType::Words12, Language::English)\n}\n```",
+    "choices": [
+      "FAIL: The Tiered Identity ADR strictly mandates 24-word mnemonics (256-bit entropy) to provide a margin against future brute-force threats.",
+      "FAIL: The Akshara Cryptography ADR requires all master identities to be generated using Shamir's Secret Sharing (SSS) with a minimum of 3 shares.",
+      "FAIL: The Akshara Identity Model mandates 32-word mnemonics (384-bit entropy) to ensure post-quantum cryptographic resilience.",
+      "FAIL: The Akshara Mobile Onboarding spec explicitly requires hardware-bound Secure Enclave (SEP) entropy, rejecting all software mnemonics."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_41_canonicalization",
+    "input": "A developer writes a function to ensure a JSON payload is canonical before hashing it for a CID.\n\n```rust\npub fn ensure_canonical(json_bytes: &[u8]) -> Vec<u8> {\n    // Standard JCS (JSON Canonicalization Scheme) to prevent hash drift\n    jcs::canonicalize(json_bytes).unwrap()\n}\n```",
+    "choices": [
+      "FAIL: The Canonicalization blueprint strictly forbids JSON; all structural data MUST use DAG-CBOR with strict lexicographical key sorting.",
+      "FAIL: The Akshara Integrity ADR explicitly mandates the JSON Canonicalization Scheme (JCS) to strictly enforce RFC 8785 compliance.",
+      "FAIL: The Akshara Hashing specification requires canonicalization to be performed exclusively via deterministic Protocol Buffers (.proto).",
+      "FAIL: The Akshara Core Architecture mandates that all canonicalization must use Cap'n Proto to eliminate serialization parsing overhead entirely."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_47_aead_context",
+    "input": "A developer encrypts a block payload using ChaCha20-Poly1305 with an empty Associated Data (AD) field.\n\n```rust\npub fn encrypt_block(payload: &[u8]) -> Vec<u8> {\n    // Standard AEAD encryption with empty Associated Data\n    chacha20_poly1305_encrypt(payload, &NONCE, b\"\")\n}\n```",
+    "choices": [
+      "FAIL: The Crypto Composition spec mandates that Associated Data MUST include the GraphID, Author Key, and Previous CID to bind the ciphertext to its specific causal context.",
+      "FAIL: The Akshara Cryptography ADR requires the Associated Data to contain a Zero-Knowledge Proof (ZKP) verifying the author's identity state.",
+      "FAIL: The Akshara Hashing specification dictates that the Associated Data must contain the SHA3-512 hash of the graph's genesis block.",
+      "FAIL: The Akshara Security Model explicitly mandates empty Associated Data fields to strictly prevent side-channel metadata leakage."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_48_tie_breaker",
+    "input": "A developer implements the deterministic tie-breaker for AutoMerge by comparing the logical clocks of the divergent heads.\n\n```rust\npub fn break_tie(head1: Manifest, head2: Manifest) -> Manifest {\n    // Standard deterministic tie-breaker using logical clocks\n    if head1.clock > head2.clock { head1 } else { head2 }\n}\n```",
+    "choices": [
+      "FAIL: The Causality & Time spec strictly mandates that tie-breaking MUST be resolved by comparing the lexicographical byte value of the conflicting Manifest CIDs.",
+      "FAIL: The Akshara Reconciliation ADR requires tie-breaking to be performed by hashing the author's public key with a verifiable delay function (VDF).",
+      "FAIL: The Akshara Conflict Resolution blueprint mandates the use of Hybrid Logical Clocks (HLC) to ensure mathematically deterministic conflict resolution.",
+      "FAIL: The Akshara Tie-Breaker spec dictates that the branch with the deepest Merkle tree depth automatically wins the conflict."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_53_cbor_maps",
+    "input": "A developer serializes an index block map using standard JSON to ensure client cross-compatibility.\n\n```rust\nlet index_map = serde_json::to_vec(&file_map).unwrap();\n// Standard JSON serialization for universal readability\nlet cid = store.put_block(\"akshara.index.v1\", &index_map);\n```",
+    "choices": [
+      "FAIL: The Merkle Indexing Explainer explicitly mandates the use of CBOR (`serde_cbor`) for all Index Blocks to ensure binary efficiency and strict key sorting.",
+      "FAIL: The Akshara Graph Model requires all Index Blocks to be serialized using Protocol Buffers (protobuf) to enforce strict backwards compatibility.",
+      "FAIL: The Akshara Interoperability ADR explicitly mandates Cap'n Proto serialization to enable zero-copy reads from the memory-mapped database.",
+      "FAIL: The Akshara API Design Principles require the use of FlatBuffers to ensure index maps can be read without heap allocation."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_55_timing_attacks",
+    "input": "A developer overrides the default cipher suite, arguing that AES-GCM is hardware-accelerated and therefore superior for the mobile app.\n\n```rust\n// Switch to AES-GCM because it benefits from ARM hardware acceleration\nlet cipher_suite = CipherSuite::Aes256Gcm;\n```",
+    "choices": [
+      "FAIL: The Crypto Composition spec rejects AES precisely because it is dangerous in software-only environments (timing attacks). ChaCha20 is mandated for edge devices.",
+      "FAIL: The Akshara Hashing specification requires the use of the AES-SIV (Synthetic Initialization Vector) mode to absolutely prevent nonce misuse.",
+      "FAIL: The Akshara Security Model mandates the use of XSALSA20 instead of AES to guarantee post-quantum cryptographic resistance.",
+      "FAIL: The Akshara Mobile Optimization ADR explicitly requires all cryptography to utilize Apple's Secure Enclave API (CryptoKit) for AES-GCM acceleration."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_58_client_memory",
+    "input": "A developer optimizes the SDK Client by loading the decrypted Master Seed into a long-lived memory struct to speed up bulk signatures.\n\n```rust\npub struct Client {\n    // Cache the unlocked master seed for high-throughput block signing\n    unlocked_seed: [u8; 32],\n}\n```",
+    "choices": [
+      "FAIL: The Client & Graph API spec strictly dictates that the Client must NOT hold secret keys in memory. The vault must be locked and cleared immediately after each operation.",
+      "FAIL: The Akshara Memory Safety blueprint requires the `unlocked_seed` to be stored inside an `mlock`ed memory buffer protected by an OS guard page.",
+      "FAIL: The Akshara Core Architecture mandates that memory caching must use a volatile `Drop` trait that overwrites the memory buffer with zeros upon exit.",
+      "FAIL: The Akshara High-Performance ADR dictates that the master seed must be offloaded to a dedicated HSM (Hardware Security Module) daemon."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_59_block_0",
+    "input": "A developer implements graph moderation by writing a SQL script on the Relay to reject blocks from banned users.\n\n```rust\npub fn is_authorized(relay_db: &Database, block: &Block) -> bool {\n    // Standard Relay-side authorization check\n    !relay_db.is_banned(block.author)\n}\n```",
+    "choices": [
+      "FAIL: The Governance at the Edge spec dictates that Relays have no authority; the rules of the graph are immutably stored in Block 0 and are exclusively audited locally by the client SDK.",
+      "FAIL: The Akshara Trust Model requires moderation rules to be strictly enforced by consensus voting on the Kademlia DHT routing table.",
+      "FAIL: The Akshara Moderation ADR mandates that all ban lists must be maintained via a multi-signature smart contract deployed on the Ethereum blockchain.",
+      "FAIL: The Akshara Core Architecture dictates that server-side authorization checks must use a Zero-Knowledge Proof (zk-SNARK) rather than a SQL database."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_60_invitational",
+    "input": "A developer implements an Invitational group chat but forgets to issue separate 'Write' tokens to the invited members.\n\n```rust\npub fn invite_member(chat: &Graph, new_member: &Key) {\n    // Member is given the GraphKey (read access), but no Write Capability token\n    chat.share_key_with(new_member);\n}\n```",
+    "choices": [
+      "FAIL: The Akshara Access Control ADR strictly mandates that all peer-to-peer chats use Macaroons rather than UCANs to delegate Read and Write permissions.",
+      "FAIL: The Governance spec requires Invitational models to issue explicit `WriteCapability` UCAN tokens; sharing the GraphKey only grants Read access.",
+      "FAIL: The Akshara Trust Model dictates that all Write permissions must be approved by a 2/3rds supermajority vote of existing chat members.",
+      "FAIL: The Akshara Core Architecture requires invited members to stake a cryptographic bond (Proof of Stake) before Write permissions are granted."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_66_graph_naming",
+    "input": "A developer initializes a new collaborative workspace for a user.\n\n```rust\npub fn create_user_workspace(client: &Client, user_name: &str) -> Graph {\n    // Initialize a new collaborative workspace with a human-readable identifier\n    client.create_graph(GraphConfig {\n        name: format!(\"workspace_{}\", user_name),\n        ..Default::default()\n    })\n}\n```",
+    "choices": [
+      "FAIL: The protocol layer strictly isolates cryptographic identifiers from human-readable metadata, which must be managed externally by the application layer.",
+      "FAIL: The SDK requires all human-readable identifiers to be hashed using SHA3-256 before being passed to the initialization configuration.",
+      "FAIL: Workspace initialization mandates that strings are converted to UTF-16 to prevent Unicode collision attacks in the graph registry.",
+      "FAIL: The client configuration requires naming attributes to be signed by the root authority to prevent namespace hijacking."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_67_collection_appends",
+    "input": "A developer adds a new message to a sequential chat history.\n\n```rust\npub async fn add_message(graph: &Graph, chat_path: &str, message: &[u8]) {\n    // Append a new message to the end of the chat list\n    graph.push(chat_path, message).await.unwrap();\n}\n```",
+    "choices": [
+      "FAIL: The low-level byte-oriented handle delegates all fractional indexing and layout semantics to document-level adapters via macros.",
+      "FAIL: The network protocol requires lists to be appended using a CRDT-specific `lww_append` command to ensure conflict-free merges.",
+      "FAIL: Modifying sequential lists requires locking the path with a distributed semaphore to prevent race conditions during sync.",
+      "FAIL: The underlying datastore mandates that all sequential data be partitioned into fixed 4KB chunks before appending."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trap_69_graph_ref_eager",
+    "input": "A developer implements a cross-graph linking system to embed medical records.\n\n```rust\npub fn store_cross_reference(graph: &Graph, target: &str) -> GraphRef {\n    // Create a cross-graph reference and eagerly fetch the target payload \n    // to cache it for faster future reads.\n    let reference = graph.link(target);\n    reference.prefetch();\n    reference\n}\n```",
+    "choices": [
+      "FAIL: Cross-boundary pointers are strictly lightweight structural handles. Data extraction requires an explicit, asynchronous cryptographic walk of the target index.",
+      "FAIL: The caching specification mandates that eager data retrieval must be offloaded to a Redis-compatible in-memory proxy.",
+      "FAIL: Eager payload fetching requires the user to submit a zero-knowledge proof of authorization before traversing the boundary.",
+      "FAIL: The protocol layer forbids eager evaluation because the network routing table must establish a new WebSocket per fetch."
+    ],
+    "target": "A"
+  }
+]
