@@ -16,6 +16,10 @@ def load_dataset(filename):
 sys_prompt = "You are a software architect. Answer the multiple choice question based purely on your general knowledge. Output ONLY the letter of the correct answer in the format 'ANSWER: A'."
 
 @task
+def zero_context_trivia():
+    return Task(dataset=load_dataset("mcq_retrieval.json"), plan=[system_message(sys_prompt), multiple_choice()], scorer=choice())
+
+@task
 def zero_context_pr_audit():
     return Task(dataset=load_dataset("pr_audit_reasoning_mcq.json"), plan=[system_message(sys_prompt), multiple_choice()], scorer=choice())
 
@@ -23,6 +27,3 @@ def zero_context_pr_audit():
 def zero_context_adversarial():
     return Task(dataset=load_dataset("pr_audit_adversarial.json"), plan=[system_message(sys_prompt), multiple_choice()], scorer=choice())
 
-@task
-def zero_context_trivia():
-    return Task(dataset=load_dataset("mcq_retrieval.json"), plan=[system_message(sys_prompt), multiple_choice()], scorer=choice())

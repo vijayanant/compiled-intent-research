@@ -25,8 +25,8 @@ def inject_intent_context():
         config_path = os.path.join(BASE_DIR, "config", "akshara_config.toml")
         try:
             result = subprocess.run(
-                ["intent", "--config", config_path, "search", "--mode", "hybrid", "--limit", "1", search_query],
-                capture_output=True, text=True, check=True
+                ["intent", "--config", config_path, "search", "--mode", "hybrid", "--limit", "3", search_query],
+                capture_output=True, text=True, check=True, cwd=BASE_DIR
             )
             search_data = json.loads(result.stdout)
             retrieved_text = ""

@@ -33,7 +33,7 @@ def oracle_adversarial():
 
 @task
 def oracle_trivia():
-    prompt = "You are a software architect. Answer the code evaluation question based on the provided architectural rules. Output ONLY the letter of the correct answer in the format 'ANSWER: A' or 'ANSWER: B'."
+    prompt = "You are a software architect. Answer the multiple choice question based on the provided architectural rules. Output ONLY the letter of the correct answer in the format 'ANSWER: A'."
     return Task(
         dataset=load_dataset("trivia_oracle.json"), 
         plan=[system_message(prompt), multiple_choice()], 

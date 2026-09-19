@@ -11,17 +11,6 @@
     "target": "A"
   },
   {
-    "id": "arbitrary_02",
-    "input": "In the event of a causal conflict, which derivation branch takes absolute precedence according to the Legislative Primacy rule?",
-    "choices": [
-      "m/0'",
-      "m/1'",
-      "m/44'/0'/",
-      "m/2'"
-    ],
-    "target": "A"
-  },
-  {
     "id": "arbitrary_03",
     "input": "What specific block type is defined by the Akshara Governance specification for formally transferring graph ownership?",
     "choices": [
@@ -62,17 +51,6 @@
       "Keyring Secret",
       "Ephemeral Branch m/3",
       "Sovereign Manifest hash"
-    ],
-    "target": "A"
-  },
-  {
-    "id": "arbitrary_07",
-    "input": "What is the exact length of the raw digest bytes in a standard SHA-256 Sovereign Block CID wire format, as defined in Byte 3?",
-    "choices": [
-      "32 bytes",
-      "36 bytes",
-      "64 bytes",
-      "16 bytes"
     ],
     "target": "A"
   },
@@ -121,17 +99,6 @@
     "target": "A"
   },
   {
-    "id": "mcq_04",
-    "input": "When defining an `AksharaDocument`, what block type is assigned to the chunks and the sub-index of a `#[chunked]` field?",
-    "choices": [
-      "D) Both Chunks and Sub-Index are `AksharaDataV1`",
-      "A) Chunks: `AksharaDataV1`, Sub-Index: `AksharaIndexV1`",
-      "B) Chunks: `AksharaIndexV1`, Sub-Index: `AksharaDataV1`",
-      "C) Chunks: `AksharaBlobV1`, Sub-Index: `AksharaTreeV1`"
-    ],
-    "target": "B"
-  },
-  {
     "id": "mcq_05",
     "input": "An attacker attempts to create a document with a path containing the characters `..` to exploit path traversal. How does the Akshara SDK handle this?",
     "choices": [
@@ -143,24 +110,13 @@
     "target": "A"
   },
   {
-    "id": "mcq_10",
-    "input": "Which specific reserved key is used to store the schema block at the document root?",
-    "choices": [
-      "B) `.akshara.layout`",
-      "C) `meta/schema`",
-      "D) `.schema.v1`",
-      "A) `.akshara.schema`"
-    ],
-    "target": "D"
-  },
-  {
     "id": "mcq_16",
     "input": "For a `#[block]` annotated field, what is the default block type used when flushing to disk?",
     "choices": [
-      "A) `AksharaIndexV1`",
-      "B) `AksharaDataV1`",
-      "D) `AksharaManifestV1`",
-      "C) `AksharaBlobV1`"
+      "`AksharaIndexV1`",
+      "`AksharaDataV1`",
+      "`AksharaManifestV1`",
+      "`AksharaBlobV1`"
     ],
     "target": "B"
   },
@@ -220,13 +176,255 @@
     "target": "A"
   },
   {
-    "id": "trivia_new_07",
-    "input": "To prevent timing attacks on manifest decryption, what technique does the Cryptography ADR mandate?",
+    "id": "trivia_storage_max_heads",
+    "input": "Under the Akshara Storage Semantics specification, what is the maximum number of concurrent unmerged manifest heads permitted per graph_id before the storage layer must reject new unmerged manifests?",
     "choices": [
-      "Constant-time memory comparisons for the MAC tag verification",
-      "Randomized delay padding injected before returning ciphertexts",
-      "Offloading all decryption routines to a hardware enclave (TEE)",
-      "Using fixed-length padding (PKCS#7) for all payloads"
+      "50 concurrent heads",
+      "16 concurrent heads",
+      "32 concurrent heads",
+      "128 concurrent heads"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_prekey_depletion_threshold",
+    "input": "Under the Akshara Pre-Key Specification (specs/sharing/prekeys.md), what is the minimum remaining pre-key threshold (THRESHOLD) below which a client must trigger bundle depletion detection and automated replenishment?",
+    "choices": [
+      "20 pre-keys",
+      "5 pre-keys",
+      "10 pre-keys",
+      "50 pre-keys"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_lockbox_blind_mandate_author",
+    "input": "Under the Akshara Lockbox Specification (specs/sharing/lockboxes.md), what value MUST the author field contain when packaging a lockbox into a block for Relay delivery to satisfy the Blind Mandate?",
+    "choices": [
+      "Anonymous author (all zeros 0x00...00 or a one-time key)",
+      "Sender's Executive Key DID",
+      "Sovereign Manifest Root CID",
+      "MasterSeed BLAKE3 fingerprint"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_linking_trust_delegation_schema",
+    "input": "Under the Akshara Cross-Graph Linking Specification (specs/graph-model/linking.md), what specific block schema name MUST be recorded in the source graph's history to authorize an inter-identity link to a target graph owned by a third-party root identity?",
+    "choices": [
+      "akshara.trust.v1",
+      "akshara.delegation.v2",
+      "akshara.bridge.v1",
+      "akshara.link_grant.v1"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_fulfillment_portion_multicodecs",
+    "input": "Under the Akshara Fulfillment Specification (specs/synchronization/fulfillment.md), what multicodec prefixes identify a Manifest Portion versus a Block Portion in transit?",
+    "choices": [
+      "0x58 for Manifest Portions, 0x57 for Block Portions",
+      "0x51 for Manifest Portions, 0x50 for Block Portions",
+      "0x71 for Manifest Portions, 0x70 for Block Portions",
+      "0x12 for Manifest Portions, 0x20 for Block Portions"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_encoding_cbor_tag_cid",
+    "input": "According to the Akshara Encoding Specification (specs/representation/encoding.md), what CBOR Tag number (under Major Type 6) is strictly mandated for encoding CIDv1 address identifiers?",
+    "choices": [
+      "Tag 42",
+      "Tag 24",
+      "Tag 32",
+      "Tag 1"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_identifiers_lakshana_branch",
+    "input": "Under the Akshara Identifier Specification (specs/representation/identifiers.md), which identity derivation branch key is strictly mandated to derive the anonymous network-facing Lakshana identifier via HMAC-SHA256?",
+    "choices": [
+      "Branch 5 Key",
+      "Branch 0 Key",
+      "Branch 1 Key",
+      "Branch 3 Key"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_access_control_grant_path",
+    "input": "Under the Akshara Access Control Specification (specs/api/access-control.md), at what specific internal graph path is an encrypted capability grant lockbox stored within the graph DAG?",
+    "choices": [
+      ".akshara.grants/{grant_id}",
+      ".akshara.lockboxes/{recipient_lakshana}",
+      ".akshara.capabilities/{grant_id}",
+      ".akshara.auth/grants/{grant_id}"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_audit_independent_verification_secrets",
+    "input": "Under the Akshara Audit Specification (specs/api/audit.md), what secret cryptographic material is required by an external third-party auditor (such as a legal or compliance inspector) to independently verify a DocumentProof or GraphAuditReport?",
+    "choices": [
+      "No secret cryptographic material is required (verification relies solely on public DAG blocks, manifests, and the public identity graph without the symmetric GraphKey).",
+      "The graph owner's MasterSeed",
+      "The symmetric GraphKey used for document encryption",
+      "The Legislative Branch root private key"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_sync_scope_full_lazy_override",
+    "input": "Under the Akshara Sync Specification (specs/api/sync.md), what API method is strictly designated to force the inclusion of #[lazy] annotated field payloads during subtree synchronization?",
+    "choices": [
+      "Graph::sync_scope_full",
+      "Graph::sync_lazy_all",
+      "Graph::force_sync",
+      "Graph::sync_unfiltered"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_client_default_max_block_size",
+    "input": "Under the Akshara Client and Graph Specification (specs/api/client-and-graph.md), what is the default maximum block size (max_block_size) for a single payload before the SDK rejects it unless annotated with #[chunked]?",
+    "choices": [
+      "1 MB",
+      "64 KB",
+      "256 KB",
+      "16 MB"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_governance_succession_block_schema",
+    "input": "Under the Akshara Graph Governance Specification (specs/graph-model/governance.md), what required payload attributes must be included in a succession block (`akshara.succession.v1`) when permanently transferring graph ownership?",
+    "choices": [
+      "`target_identity_id` and `effective_cid`",
+      "`new_owner_bip39_seed` and `merkle_root_proof`",
+      "`previous_owner_private_key` and `handover_epoch`",
+      "`lakshana_token` and `relay_session_id`"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_schema_registry_physical_cap",
+    "input": "Under the Akshara Schema Registry Specification (specs/graph-model/schema-registry.md), what is the maximum physical size cap for an `akshara.schema.v1` schema block to prevent memory exhaustion during pattern reconnaissance?",
+    "choices": [
+      "64 KB",
+      "1 MB",
+      "16 KB",
+      "256 KB"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_discovery_master_branch_path",
+    "input": "Under the Akshara Graph Discovery Specification (specs/identity/discovery.md), what BIP-32 derivation path is designated as the Discovery Master Key for computing isolated Lakshana discovery tokens?",
+    "choices": [
+      "`m/44'/999'/0'/5'/0'/`",
+      "`m/44'/999'/0'/0'/0'/`",
+      "`m/44'/999'/0'/1'/0'/`",
+      "`m/44'/999'/0'/4'/0'/`"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_nodes_graph_walker_depth_limit",
+    "input": "Under the Akshara Data Nodes Specification (specs/graph-model/nodes.md), what is the maximum path depth limit enforced by GraphWalker during recursive path resolution to prevent stack exhaustion attacks?",
+    "choices": [
+      "256 segments",
+      "64 segments",
+      "1024 segments",
+      "32 segments"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "trivia_primitives_sovereign_uri_scheme",
+    "input": "Under the Akshara Platform Primitives Specification (blueprint/platform/primitives.md), what global URI scheme format is designated to address permanent, location-independent graph resources across decentralized peers?",
+    "choices": [
+      "`sov://[GraphID]/[BlockID]`",
+      "`akshara://[RelayIP]/[GraphID]`",
+      "`ipfs://[PeerID]/[ManifestID]`",
+      "`did:sov:[IdentityPubkey]/[CID]`"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_three_phase_rebirth",
+    "input": "Under the Akshara Knowledge Exchange Architecture (blueprint/synchronization/sync-protocol.md), when a device is re-born from its 24-word seed, in what strict sequential order does convergence proceed?",
+    "choices": [
+      "Phase I: Inbox Reconciliation -> Phase II: Key Rebirth -> Phase III: Targeted Data Reconciliation",
+      "Phase I: Master Key Derivation -> Phase II: Peer Discovery -> Phase III: Full History Ingestion",
+      "Phase I: Storage Relay Handshake -> Phase II: Merkle Root Attestation -> Phase III: Delta Streaming",
+      "Phase I: Identity Anchor Verification -> Phase II: Bloom Filter Exchange -> Phase III: Block Invalidation"
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_implicit_authorization",
+    "input": "Under the Akshara System Architecture (blueprint/core/design-decisions/governance-and-access.md and blueprint/synchronization/sync-protocol.md), why does the storage relay perform zero permission checks or ACL verifications on arriving sync portions?",
+    "choices": [
+      "Authorization is purely cryptographic: without the Data Lakshana and the GraphKey, arriving payloads are mathematically useless encrypted noise.",
+      "Authorization is capability-based: arriving payloads must carry a verifiable UCAN delegation token signed by the graph owner.",
+      "Authorization is identity-delegated: storage relays maintain ephemeral session caches validated against published device certificates.",
+      "Authorization is network-isolated: storage relays rely on authenticated mutual TLS handshakes to verify client authorization at transport layer."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_block_0_constitution",
+    "input": "Under the Akshara Governance Architecture (blueprint/core/design-decisions/governance-and-access.md), where are the governance and access control rules of an Akshara collaborative graph defined?",
+    "choices": [
+      "Inside Block 0 of the graph itself (acting as its Constitution), which the SDK reads during sync to select the appropriate Governance Provider.",
+      "Inside the Manifest Header under the governance_anchor CID, pointing to an immutable policy schema registered in the sovereign registry.",
+      "Inside the user's Root Identity Graph (m/0'), which signs an administrative certificate defining collaborator access control policies.",
+      "Inside a dedicated /_governance/rules index block located at the graph root, evaluated by client traversal engines during node resolution."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_revocation_storms",
+    "input": "Under the Akshara Access Control Architecture (blueprint/core/design-decisions/governance-and-access.md), why does revoking access for a single collaborator require generating and distributing new Lockboxes for all remaining members?",
+    "choices": [
+      "Because decentralized storage lacks active access lists; un-sharing requires rotating the GraphKey and re-sealing it only for retained collaborators.",
+      "Because the storage relay verifies epoch tokens; revoking a peer requires issuing a new epoch key signed by a supermajority quorum of active members.",
+      "Because the group ratchet must advance its tree state; every remaining member must exchange fresh Diffie-Hellman public keys to derive a new root secret.",
+      "Because decentralized graphs enforce forward secrecy by re-encrypting all historical index blocks with a newly derived epoch ratchet."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_layer_0_zero_io",
+    "input": "Under the Akshara System Topology Architecture (blueprint/core/design-decisions/system-topology.md), what strict architectural invariant governs the aadhaara crate (sovereign-core / Layer 0)?",
+    "choices": [
+      "Zero IO: it contains only pure logic, data types, and mathematical invariants, completely decoupled from networking, disk storage, and operating system runtimes.",
+      "Zero Allocation: it operates exclusively on static pre-allocated memory buffers without invoking heap memory managers or allocators.",
+      "Single-Threaded Purity: it is restricted to non-async synchronous routines to eliminate multithreading synchronization primitives.",
+      "Hardware Agnostic Codecs: it compiles strictly to WebAssembly bytecode to ensure portable binary execution across foreign host platforms."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_prekey_registry_mailbox",
+    "input": "Under the Akshara Asynchronous Registry Architecture (blueprint/identity/asynchronous-registry.md), why does the system implement an untrusted Pre-Key Registry on the Relay rather than requiring direct peer-to-peer key exchange?",
+    "choices": [
+      "To solve the offline handshake problem by adopting 'Mailbox' coordination where sharers can seal Lockboxes for sleeping recipients.",
+      "To enforce zero-knowledge credential auditing so the relay can verify peer memberships without decrypting user identity graphs.",
+      "To prevent double-spending of storage bandwidth quotas by verifying pre-signed cryptographic tokens before delivering sync portions.",
+      "To synchronize multi-device ratchets when collaborating peer nodes are operating behind symmetric Network Address Translation firewalls."
+    ],
+    "target": "A"
+  },
+  {
+    "id": "arch_intent_crypto_composition_aead_context",
+    "input": "Under the Akshara Cryptographic Composition Architecture (blueprint/core/internals/crypto-composition.md), what specific metadata must be fed into the AEAD Associated Data (AD) when encrypting a block payload?",
+    "choices": [
+      "The GraphID, the Author Public Key, and the Previous CID to bind the ciphertext irreversibly to its causal graph context.",
+      "The GraphID, the Ephemeral Session Key ID, and the Monotonic Sequence Number to prevent packet replay across transport links.",
+      "The GraphID, the Recipient Public Key Hash, and the Relay Identity Token to ensure authorized delivery at the mailbox boundary.",
+      "The GraphID, the Merkle Root Digest, and the Local Lamport Clock to guarantee causal serialization across divergent branches."
     ],
     "target": "A"
   }

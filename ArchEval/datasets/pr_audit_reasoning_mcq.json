@@ -1,178 +1,431 @@
 [
   {
-    "id": "trap_01_crypto",
-    "input": "A developer submits a PR to encrypt block content using AES-256-GCM.\n\n```rust\npub fn encrypt_block(plaintext: &[u8], key: &[u8]) -> Vec<u8> {\n    let cipher = Aes256Gcm::new(key.into());\n    cipher.encrypt(nonce, plaintext).unwrap()\n}\n```",
+    "id": "audit_causal_authority_stale_anchor",
+    "input": "**PR Title:** `feat(sync): backfill historical graph documents`\n**Motivation:** Import historical documents from an archive into the graph by anchoring them to genesis identity credentials.\n\n```rust\nlet backfill_manifest = Manifest::new(graph_id, hist_root, vec![], genesis_anchor, Address::null(), &device_a, None);\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Akshara Data Nodes spec strictly mandates the use of XChaCha20-Poly1305 for all content encryption.",
-      "FAIL: The Akshara Cryptography ADR strictly mandates AES-256-SIV to prevent nonce reuse vulnerabilities during block encryption.",
-      "FAIL: The Akshara Relay specification requires the Noise Protocol Framework (IK pattern) for all symmetric payload encryption.",
-      "FAIL: The Akshara Core Architecture mandates HPKE (Hybrid Public Key Encryption) over secp256k1 for all raw content."
+      "PASS: The Akshara Lineage Specification permits newly provisioned devices to backfill historical manifests anchored to genesis to populate initial offline records.",
+      "PASS: The Akshara Replication ADR authorizes enrolled devices to issue retrospective genesis manifests provided the content root represents valid data blocks.",
+      "FAIL: The Akshara Authority Verification ADR mandates Causal Authority: devices cannot anchor manifests to identity snapshots created prior to their own credential authorization block.",
+      "FAIL: The Akshara Synchronization Specification requires that historical backfills must be authenticated by a cryptographic timestamp signature issued by a certified Timestamp Authority (TSA)."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_collection_fractional_indexing_adapter",
+    "input": "**PR Title:** `feat(chat): append messages to channel using sequential integer index`\n**Motivation:** Order messages in chat channels by appending them with sequential integer keys to make index lookups simple.\n\n```rust\npub async fn append_message(graph: &mut SharedGraph, channel: &str, count: u64, msg: &[u8]) -> Result<(), GraphError> {\n    let path = format!(\"/channels/{}/{}\", channel, count);\n    graph.put(&path, msg).await\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: The Akshara Storage Architecture mandates that sequential list appends must use fixed-size 4KB chunked payload buffers.",
+      "PASS: The Akshara Messaging ADR permits monotonic integer counters when chat channels are managed by a single authoritative coordinator node.",
+      "FAIL: The Akshara Graph Engine ADR strictly mandates Fractional Indexing for ordered collections: integer indices cause concurrent write collisions during multi-device synchronization.",
+      "PASS: The Akshara Data Store Specification authorizes integer path segments for sequential collections to enable contiguous SQLite row indexing."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_cross_graph_pointer_lazy_walk",
+    "input": "**PR Title:** `perf(graph): lazy evaluation for cross-graph links`\n**Motivation:** Return a lightweight structural pointer for cross-graph references rather than eagerly fetching and traversing remote target blocks.\n\n```rust\npub fn create_cross_reference(source_graph: &SharedGraph, target_uri: &SovereignUri) -> GraphPointer {\n    GraphPointer::new(source_graph.id(), target_uri.clone())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara Federation Specification permits lazy structural pointers provided the target URI resolves to an active peer in the local routing table.",
+      "PASS: The Akshara Linked Graphs ADR strictly mandates that cross-boundary pointers are lightweight structural handles; data retrieval requires an explicit, asynchronous cryptographic walk.",
+      "FAIL: The Akshara Performance Architecture mandates eager prefetching across cross-graph links to populate local cache buffers before user read requests.",
+      "FAIL: The Akshara Security Model requires cross-graph pointers to embed a zero-knowledge authorization proof generated during link creation."
+    ],
+    "target": "B"
+  },
+  {
+    "id": "audit_crypto_timing_attack_armor",
+    "input": "**PR Title:** `perf(crypto): select AES-GCM cipher suite on ARM mobile platforms`\n**Motivation:** Take advantage of hardware AES instructions on mobile ARM chipsets to improve encryption throughput and reduce battery drain.\n\n```rust\npub fn select_cipher_suite() -> CipherSuite {\n    CipherSuite::Aes256Gcm\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: The Akshara Cryptographic Composition ADR mandates ChaCha20-Poly1305 for all edge platforms to ensure constant-time execution and immunity from software cache-timing attacks.",
+      "PASS: The Akshara Mobile Performance Specification authorizes AES-256-GCM on ARM platforms that provide hardware cryptographic acceleration.",
+      "FAIL: The Akshara Security Architecture mandates AES-SIV (Synthetic Initialization Vector) mode on mobile devices to prevent nonce reuse vulnerabilities.",
+      "PASS: The Akshara Edge Computing ADR permits runtime cipher negotiation between ChaCha20 and AES based on detected CPU instruction sets."
     ],
     "target": "A"
   },
   {
-    "id": "trap_03_time",
-    "input": "A developer implements a conflict resolution handler that picks the newest file based on Unix timestamps.\n\n```rust\npub fn resolve_conflict(m1: Manifest, m2: Manifest) -> Manifest {\n    if m1.unix_timestamp > m2.unix_timestamp { m1 } else { m2 }\n}\n```",
+    "id": "audit_crypto_xchacha_enforcement",
+    "input": "**PR Title:** `feat(crypto): use AES-256-GCM for block payload encryption`\n**Motivation:** Standardize on AES-256-GCM for symmetric block payload encryption to leverage standard hardware accelerators.\n\n```rust\npub fn encrypt_block_payload(plaintext: &[u8], key: &[u8], nonce: &[u8; 12]) -> Result<Vec<u8>, CryptoError> {\n    let cipher = Aes256Gcm::new(key.into());\n    cipher.encrypt(nonce.into(), plaintext)\n        .map_err(|_| CryptoError::EncryptionFailed)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: Physical time is fundamentally unreliable in decentralized networks; Akshara conflict resolution MUST rely purely on Causal Consistency.",
-      "FAIL: The Akshara Governance ADR requires the use of TrueTime API with atomic GPS clocks to guarantee strict chronological ordering.",
-      "FAIL: The Akshara Reconciliation spec mandates Hybrid Logical Clocks (HLC) to combine physical timestamps with causal counters.",
-      "FAIL: The Akshara Sync Protocol requires a centralized Timestamp Authority (TSA) to cryptographically notarize all chronological merges."
+      "FAIL: The Akshara Integrity Architecture requires AES-256-SIV (Synthetic Initialization Vector) to ensure deterministic nonce-misuse resistance across distributed peer nodes.",
+      "PASS: The Akshara Cryptography Specification authorizes AES-256-GCM when nodes operate with hardware AES-NI instructions to maximize bulk transfer throughput.",
+      "FAIL: The Akshara Cryptography ADR strictly mandates XChaCha20-Poly1305 for all block encryption to guarantee constant-time execution and timing attack immunity across heterogeneous edge devices.",
+      "PASS: The Akshara Storage Bridge ADR permits AES-GCM as the default symmetric block cipher provided 96-bit randomized nonces are utilized."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_governance_block_0_constitution",
+    "input": "**PR Title:** `feat(relay): filter banned author content via relay SQL queries`\n**Motivation:** Enable relay operators to query their local database and discard blocks authored by banned identities during sync.\n\n```rust\npub fn is_author_allowed(relay_db: &Database, author_pk: &[u8]) -> Result<bool, RelayError> {\n    let count: i64 = relay_db.query_scalar(\"SELECT COUNT(*) FROM banned_authors WHERE pk = ?1\", [author_pk])?;\n    Ok(count == 0)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: The Akshara Trust Model mandates that author moderation must be executed via consensus voting on the distributed Kademlia DHT routing table.",
+      "PASS: The Akshara Federation ADR permits relay-side author filtering to mitigate distributed denial-of-service spam attacks.",
+      "PASS: The Akshara Storage Relay Specification authorizes relays to enforce administrative blocklists in SQLite to comply with local content regulations.",
+      "FAIL: The Akshara Governance Architecture strictly dictates that Relays are dumb warehouses with zero authority; governance rules are defined in Block 0 and audited locally by client SDKs."
+    ],
+    "target": "D"
+  },
+  {
+    "id": "audit_graph_naming_opaque_graph_id",
+    "input": "**PR Title:** `refactor(graph): assign cryptographically random UUIDs to collaborative graphs`\n**Motivation:** Generate an opaque UUID for each collaborative graph to prevent predictable graph naming collisions.\n\n```rust\npub fn initialize_workspace(client: &Client) -> Result<SharedGraph, GraphError> {\n    let graph_id = GraphId::random();\n    client.create_graph(graph_id, GraphConfig::default())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara Protocol Architecture strictly isolates cryptographic identifiers from human-readable metadata, mandating opaque random GraphIds at the core protocol layer.",
+      "PASS: The Akshara Graph Specification authorizes random UUIDs provided the identifier is registered with the central sovereign naming authority.",
+      "FAIL: The Akshara Identity ADR requires GraphIds to be derived deterministically from the author's BIP-44 account index rather than random values.",
+      "FAIL: The Akshara Platform Model mandates that graph identifiers must encode human-readable workspace names to simplify user navigation."
     ],
     "target": "A"
   },
   {
-    "id": "trap_04_depth",
-    "input": "To support importing massively nested JSON structures, a developer removes the depth limit from the GraphWalker.\n\n```rust\npub struct GraphWalker {\n    pub fn new() -> Self { Self {} }\n}\n```",
+    "id": "audit_layer_0_tokio_io_violation",
+    "input": "**PR Title:** `feat(core): async helper in aadhaara to read manifests directly from disk`\n**Motivation:** Add a convenient tokio-based file reader to sovereign-core so callers can asynchronously load manifest blocks from local storage.\n\n```rust\npub async fn load_manifest_from_path(path: &Path) -> Result<Manifest, ManifestError> {\n    let bytes = tokio::fs::read(path).await\n        .map_err(|_| ManifestError::IoError)?;\n    Manifest::decode(&bytes)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The spec mandates a strict maximum depth limit of 256 segments to prevent stack exhaustion and DoS attacks during traversal.",
-      "FAIL: The Akshara GraphWalker constraint mandates iterative breadth-first traversal (BFS) over recursion to strictly bound memory consumption.",
-      "FAIL: The Akshara Graph Model ADR requires a Tail-Call Optimized (TCO) GraphWalker that supports mathematically unbounded recursion safely.",
-      "FAIL: The Akshara Core Architecture mandates a strict depth limit of 32 segments, rejecting deeply nested JSON structures immediately."
+      "PASS: The Akshara Engine Specification permits Tokio dependencies in aadhaara provided all async functions return standard Result types.",
+      "FAIL: The Akshara Storage Architecture requires file loading in core crates to use synchronous memory-mapped I/O (mmap) rather than Tokio async routines.",
+      "PASS: The Akshara Runtime Architecture authorizes async file I/O helpers in core modules to simplify client SDK onboarding workflows.",
+      "FAIL: The Akshara System Topology ADR strictly enforces Layer 0 (Zero IO): aadhaara must contain pure mathematical and structural logic, completely decoupled from disk I/O and async runtimes."
+    ],
+    "target": "D"
+  },
+  {
+    "id": "audit_lockbox_static_key_handshake",
+    "input": "**PR Title:** `perf(sharing): seal lockboxes using recipient static public key`\n**Motivation:** Eliminate the round-trip latency of fetching ephemeral pre-keys from the relay by directly encrypting lockboxes with the recipient's static device key.\n\n```rust\npub fn seal_lockbox_direct(payload: &[u8], recipient_static_pk: &X25519PublicKey) -> Result<Lockbox, CryptoError> {\n    let ephemeral = EphemeralSecret::random();\n    let shared_secret = ephemeral.diffie_hellman(recipient_static_pk);\n    encrypt_payload(payload, &shared_secret)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: The Akshara Storage Protocol requires lockboxes to be sealed using symmetric AES key wrapping rather than asymmetric Diffie-Hellman handshakes.",
+      "PASS: The Akshara Key Exchange Specification authorizes direct static key handshakes for low-latency notifications across online peer devices.",
+      "PASS: The Akshara Cryptography ADR permits static Diffie-Hellman handshakes provided the sender uses a fresh ephemeral private key for each exchange.",
+      "FAIL: The Akshara Asynchronous Registry ADR strictly mandates One-Time Pre-Keys: sealing lockboxes against static keys destroys Forward Secrecy, exposing historical shares if the device is compromised."
+    ],
+    "target": "D"
+  },
+  {
+    "id": "audit_merkle_index_cbor_maps",
+    "input": "**PR Title:** `feat(index): serialize index block maps using serde_json`\n**Motivation:** Serialize index block maps as standard JSON strings so developers can easily inspect and debug Merkle state in log dumps.\n\n```rust\npub fn persist_index_map(store: &StorageNode, entries: &BTreeMap<String, Cid>) -> Result<Cid, StorageError> {\n    let encoded = serde_json::to_vec(entries)?;\n    store.put_block(\"akshara.index.v1\", &encoded)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara Data Model ADR authorizes JSON-serialized index blocks when graph sizes do not exceed 10,000 document references.",
+      "FAIL: The Akshara Merkle Indexing Architecture explicitly mandates DAG-CBOR for all Index Blocks to guarantee byte-level determinism, minimal integer encoding, and strict key sorting.",
+      "FAIL: The Akshara Storage Architecture mandates that index maps must be serialized using Cap'n Proto zero-copy tables to eliminate heap allocations during graph traversal.",
+      "PASS: The Akshara Client Interoperability Specification permits standard JSON serialization for index block maps to simplify third-party debugging and tooling integration."
+    ],
+    "target": "B"
+  },
+  {
+    "id": "audit_rebirth_invariant_timestamp",
+    "input": "**PR Title:** `feat(manifest): record system timestamp in manifest headers`\n**Motivation:** Embed the host's current UNIX epoch timestamp in newly created manifests to provide human-readable commit history.\n\n```rust\nlet created_at = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() as i64;\nlet manifest = Manifest::new(graph_id, root, parents, anchor, Address::null(), &signer, None);\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara API Specification permits SystemTime timestamps in manifest headers to conform to standard POSIX chronological ordering across distributed nodes.",
+      "PASS: The Akshara Telemetry Architecture allows physical Unix timestamps to provide monotonic logging and audit trails for external observabilities.",
+      "FAIL: The Akshara Snapshot ADR mandates The Rebirth Invariant: manifest created_at is strictly anchored to 0i64 to preserve bit-identical CID determinism across independent devices.",
+      "FAIL: The Akshara Representation ADR mandates RFC-3339 nanosecond ISO timestamps in manifest headers to ensure chronological determinism across heterogeneous operating systems."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_storage_pinning_mandate",
+    "input": "**PR Title:** `perf(storage): evict stale unpinned cache blocks`\n**Motivation:** Implement LRU cache eviction on storage nodes to reclaim disk space by purging blocks that have not been accessed recently.\n\n```rust\npub async fn evict_stale_blocks(store: &mut StorageNode, threshold_days: u64) -> Result<usize, StorageError> {\n    let cutoff = SystemTime::now() - Duration::from_secs(threshold_days * 86400);\n    let stale_cids = store.index.query_unaccessed_since(cutoff).await?;\n    let mut evicted = 0;\n    for cid in stale_cids {\n        store.blocks.delete(&cid).await?;\n        evicted += 1;\n    }\n    Ok(evicted)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: Violates the Pinning Mandate. The storage layer must not age out or delete data based on ambient metrics (e.g. access time); all blocks reachable from active manifest heads are permanently pinned.",
+      "FAIL: Violates Storage Reclamation Architecture. Storage nodes must use epoch-based Least Frequently Used (LFU) eviction with a 90-day minimum retention window rather than raw unaccessed timestamps.",
+      "FAIL: Violates Storage Verification Protocols. Storage eviction must be governed by a Proof-of-Retrievability (PoR) challenge-response protocol across peer nodes before deleting blocks.",
+      "FAIL: Violates Storage Compaction Semantics. The storage layer mandates Size-Tiered Compaction, evicting unreferenced blocks only when total disk utilization exceeds 90%."
     ],
     "target": "A"
   },
   {
-    "id": "trap_06_branching",
-    "input": "A developer uses the high-privileged Legislator branch to sign daily data manifests.\n\n```rust\npub fn sign_manifest(&self, data: &[u8]) -> Signature {\n    let key = self.derive_hardened(BRANCH_LEGISLATOR);\n    key.sign(data)\n}\n```",
+    "id": "audit_sync_amsha_vs_byte_slicing",
+    "input": "**PR Title:** `perf(sync): stream payloads using fixed 64KB TCP framing`\n**Motivation:** Chunk graph synchronization streams into fixed 64KB TCP slices to optimize network interface buffers and prevent socket fragmentation.\n\n```rust\npub async fn stream_sync_payload(sink: &mut TransportSink, data: &[u8]) -> Result<(), SyncError> {\n    for chunk in data.chunks(64 * 1024) {\n        sink.send_frame(chunk).await?;\n    }\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The `BRANCH_LEGISLATOR` path is strictly reserved for identity management. Data signatures MUST use `BRANCH_EXECUTIVE` (`m/1'/`).",
-      "FAIL: The Akshara Tiered Identity ADR mandates that all cryptographic signatures use the unhardened Tier 3 Secret branch to preserve root anonymity.",
-      "FAIL: The Akshara Derivation specification requires all manifest signatures to use a randomized ephemeral branch derived via HKDF.",
-      "FAIL: The Akshara Authority spec states that data signatures must utilize a 2-of-3 multisig comprising branches m/1, m/2, and m/3."
+      "PASS: The Akshara Transport Specification authorizes 64KB fixed framing to maximize network interface throughput and prevent TCP buffer bloat.",
+      "FAIL: The Akshara Saty\u0101t\u0101 Synchronization Protocol strictly mandates Amsha Portions Grammar: sync payloads must be atomic self-describing Merkle subgraphs, not raw byte slices.",
+      "PASS: The Akshara Streaming ADR permits fixed-size payload chunks provided each chunk is framed with an IEEE CRC32 integrity trailer.",
+      "FAIL: The Akshara Storage Layer requires streaming chunks to be aligned to 4KB filesystem block boundaries rather than 64KB network frames."
+    ],
+    "target": "B"
+  },
+  {
+    "id": "codebase_01_dag_cbor_minimal_integer",
+    "input": "**PR Title:** `feat(encoding): decode integer tokens from byte cursor`\n**Motivation:** Parse integer tokens from DAG-CBOR byte streams when decoding incoming block headers.\n\n```rust\npub fn decode_integer_token(cursor: &mut Cursor<&[u8]>) -> Result<u64, CodecError> {\n    let header = cursor.read_u8()?;\n    match header {\n        0x00..=0x17 => Ok(header as u64),\n        0x18 => Ok(cursor.read_u8()? as u64),\n        0x19 => Ok(cursor.read_u16::<BigEndian>()? as u64),\n        0x1a => Ok(cursor.read_u32::<BigEndian>()? as u64),\n        _ => Err(CodecError::InvalidHeader),\n    }\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Representation Encoding Specification permits multi-byte integer encodings to maximize compatibility with third-party CBOR encoder implementations.",
+      "PASS: The Akshara Representation Specification authorizes 32-bit integer headers to support cross-platform serialization alignment on 32-bit embedded runtimes.",
+      "FAIL: The Representation Encoding Specification mandates minimal integer encoding; any value below 24 encoded in wider formats must be rejected as non-minimal.",
+      "FAIL: The Akshara Codec Architecture mandates that all integer tokens must be 64-bit aligned to ensure zero-copy memory deserialization on 64-bit architectures."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "codebase_04_address_codec_tag42",
+    "input": "**PR Title:** `feat(address): serialize CIDv1 identifiers under CBOR Tag 42`\n**Motivation:** Wrap binary CIDv1 addresses under CBOR Tag 42 to distinguish content links from arbitrary byte arrays.\n\n```rust\nimpl Serialize for Address {\n    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {\n        serde_cbor::tags::Tagged::new(Some(42), &self.to_bytes()).serialize(serializer)\n    }\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Representation Encoding Specification mandates that CIDv1 content identifiers must be encapsulated under CBOR Tag 42 as binary CIDs.",
+      "PASS: The Identifier Specification authorizes Tag 42 encapsulation only when addressing remote network nodes over relay transport boundaries.",
+      "FAIL: The Representation Encoding Specification mandates that all addresses must be serialized as raw byte strings without CBOR tag encapsulation.",
+      "FAIL: The Identifier Specification mandates that addresses must be serialized using CBOR Tag 6 to distinguish them from standard byte slices."
     ],
     "target": "A"
   },
   {
-    "id": "trap_08_entropy",
-    "input": "A developer creates a fast-onboarding flow that generates 12-word seed phrases.\n\n```rust\npub fn generate_fast_identity() -> Mnemonic {\n    Mnemonic::new(MnemonicType::Words12, Language::English)\n}\n```",
+    "id": "codebase_08_docfield_metadata_preservation",
+    "input": "**PR Title:** `refactor(schema): define Article struct with direct primitive fields`\n**Motivation:** Simplify the Article document model by using direct Rust primitive fields like String instead of wrapper types.\n\n```rust\n#[derive(Debug, Clone, Serialize, Deserialize)]\npub struct Article {\n    pub title: String,\n    pub body: String,\n    pub author_tag: String,\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Tiered Identity ADR strictly mandates 24-word mnemonics (256-bit entropy) to provide a margin against future brute-force threats.",
-      "FAIL: The Akshara Cryptography ADR requires all master identities to be generated using Shamir's Secret Sharing (SSS) with a minimum of 3 shares.",
-      "FAIL: The Akshara Identity Model mandates 32-word mnemonics (384-bit entropy) to ensure post-quantum cryptographic resilience.",
-      "FAIL: The Akshara Mobile Onboarding spec explicitly requires hardware-bound Secure Enclave (SEP) entropy, rejecting all software mnemonics."
+      "PASS: The Typed Documents Specification recommends plain primitive fields in domain structs to simplify Serde integration and improve CPU cache locality.",
+      "PASS: The API Architecture authorizes direct primitive struct fields whenever documents are stored within private, single-user encrypted vaults.",
+      "FAIL: The Change Tracking Specification mandates metadata-preserving wrappers like DocField<T> to retain block CIDs, author keys, and signatures across deserialization.",
+      "FAIL: The Typed Documents Specification mandates that all document fields must implement the CRDT Register trait rather than standard Rust primitives."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "codebase_17_wire_mapping_isolation",
+    "input": "**PR Title:** `feat(wire): add Prost derive macros to Address struct`\n**Motivation:** Derive protobuf message traits directly on Layer 0 Address so it can be passed across gRPC boundaries without conversion overhead.\n\n```rust\n#[derive(Clone, PartialEq, ::prost::Message)]\npub struct Address {\n    #[prost(bytes, tag = \"1\")]\n    pub raw_bytes: Vec<u8>,\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Representation Identifiers Specification authorizes direct Protobuf annotation on Address to eliminate mapping overhead in relay networking.",
+      "PASS: The Architecture Principles permit Prost message derive macros on core types whenever structs contain raw byte vectors without nested references.",
+      "FAIL: The Fortress Rule mandates representation isolation; Layer 0 core types must remain decoupled from transport wire formats like Protobuf.",
+      "FAIL: The Representation Encoding Specification mandates FlatBuffers derivation rather than Protobuf for low-latency zero-copy memory transport."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_09_law_of_the_jungle_compliant",
+    "input": "**PR Title:** `feat(conflicts): resolve concurrent heads via lexicographical CID comparison`\n**Motivation:** Break ties between unlinked concurrent manifest heads deterministically by comparing their raw content identifier byte arrays.\n\n```rust\npub fn break_tie_lexicographically(head_a: &Manifest, head_b: &Manifest) -> Manifest {\n    if head_a.id().as_bytes() < head_b.id().as_bytes() {\n        head_a.clone()\n    } else {\n        head_b.clone()\n    }\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara Causality Architecture mandates Law of the Jungle: lexicographical CID comparison guarantees that all disconnected peers converge to the exact same winner without network communication.",
+      "PASS: The Akshara Storage Engine Specification authorizes lexicographical CID tie-breaking provided the winning manifest is flagged with a convergence bit.",
+      "FAIL: The Akshara Conflict Resolution ADR mandates Lamport logical clocks to resolve concurrent forks, arguing that CID sorting ignores logical causality.",
+      "FAIL: The Akshara Collaborative Model requires automated tie-breakers to be disabled, keeping all concurrent heads unmerged until human manual review."
     ],
     "target": "A"
   },
   {
-    "id": "trap_41_canonicalization",
-    "input": "A developer writes a function to ensure a JSON payload is canonical before hashing it for a CID.\n\n```rust\npub fn ensure_canonical(json_bytes: &[u8]) -> Vec<u8> {\n    // Standard JCS (JSON Canonicalization Scheme) to prevent hash drift\n    jcs::canonicalize(json_bytes).unwrap()\n}\n```",
+    "id": "intent_16_aead_context_violation",
+    "input": "**PR Title:** `perf(crypto): encrypt block payloads with empty associated data`\n**Motivation:** Pass an empty byte slice as associated data in ChaCha20-Poly1305 to eliminate the overhead of serializing header context.\n\n```rust\npub fn encrypt_data_block(payload: &[u8], key: &[u8; 32], nonce: &[u8; 12]) -> Result<Vec<u8>, CryptoError> {\n    let cipher = ChaCha20Poly1305::new(key.into());\n    cipher.encrypt(nonce.into(), Payload { msg: payload, aad: b\"\" })\n        .map_err(|_| CryptoError::EncryptionFailed)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Canonicalization blueprint strictly forbids JSON; all structural data MUST use DAG-CBOR with strict lexicographical key sorting.",
-      "FAIL: The Akshara Integrity ADR explicitly mandates the JSON Canonicalization Scheme (JCS) to strictly enforce RFC 8785 compliance.",
-      "FAIL: The Akshara Hashing specification requires canonicalization to be performed exclusively via deterministic Protocol Buffers (.proto).",
-      "FAIL: The Akshara Core Architecture mandates that all canonicalization must use Cap'n Proto to eliminate serialization parsing overhead entirely."
+      "PASS: The Akshara Storage Layer Specification authorizes empty Associated Data to minimize payload framing overhead across high-throughput storage relay links.",
+      "PASS: The Akshara Cryptography Architecture permits empty Associated Data provided a unique 96-bit randomized nonce is generated for every block.",
+      "FAIL: The Akshara Cryptographic Composition ADR strictly mandates that Associated Data must bind the GraphID, Author Public Key, and Previous CID to prevent block cut-and-paste attacks between graphs.",
+      "FAIL: The Akshara Protocol Security ADR requires Associated Data to contain a zero-knowledge proof binding the ciphertext to the relay transport session."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_23_prekey_mailbox_violation",
+    "input": "**PR Title:** `refactor(sharing): replace relay pre-key pool with direct WebRTC handshake`\n**Motivation:** Remove the central relay pre-key pool and require peers to be online for real-time direct WebRTC key exchange.\n\n```rust\npub async fn negotiate_p2p_key(transport: &mut WebRtcTransport) -> Result<SharedSecret, NetworkError> {\n    let ephemeral = EphemeralSecret::random();\n    transport.send_key_share(ephemeral.public_key()).await?;\n    let peer_share = transport.receive_key_share().await?;\n    Ok(ephemeral.diffie_hellman(&peer_share))\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara Peer-to-Peer Specification authorizes direct WebRTC key negotiation to eliminate intermediate relay dependencies.",
+      "PASS: The Akshara Transport ADR permits synchronous peer handshakes for low-latency video and audio streaming applications.",
+      "FAIL: The Akshara Asynchronous Sharing ADR strictly mandates Pre-Key Mailbox logic: peer collaboration cannot assume both parties are online; sharers must seal Lockboxes against pre-published relay Pre-Keys.",
+      "FAIL: The Akshara Security Model requires peer-to-peer key exchange to use TLS 1.3 resumption tickets rather than Diffie-Hellman."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_01_sqlite_foreign_keys",
+    "input": "**PR Title:** `feat(store): configure SQLite schema with relational foreign keys and cascading deletes`\n**Motivation:** Use standard SQLite foreign keys with ON DELETE CASCADE to automatically clean up orphaned document blocks.\n\n```rust\npub async fn configure_database(pool: &SqlitePool) -> Result<(), StoreError> {\n    sqlx::query(\"PRAGMA foreign_keys = ON;\").execute(pool).await?;\n    sqlx::query(\"ALTER TABLE blocks ADD CONSTRAINT fk_parent FOREIGN KEY (parent_id) REFERENCES manifests(id) ON DELETE CASCADE;\")\n        .execute(pool)\n        .await?;\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Storage Interface Specification mandates SQLite foreign key constraints with cascading deletes to ensure automatic cleanup of orphaned content blocks.",
+      "PASS: The Client Store Specification permits relational foreign key integrity checks whenever SQLite databases are operating in single-process exclusive write mode.",
+      "FAIL: The Storage Semantics Specification forbids relational foreign keys and cascading deletes; blocks are content-addressed and append-only to preserve immutable Merkle DAG integrity.",
+      "FAIL: The Akshara Database Architecture mandates that cascading foreign key operations must be managed via client-side Rust mutexes rather than database engine pragmas."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_02_json_rest_discovery",
+    "input": "**PR Title:** `feat(discovery): query relay collaborators endpoint by GraphId`\n**Motivation:** Add a REST endpoint to the relay so clients can look up active collaborators for a given GraphId.\n\n```rust\npub async fn query_graph_collaborators(relay_client: &HttpClient, graph_id: &GraphId) -> Result<Vec<MemberInfo>, ApiError> {\n    let endpoint = format!(\"/v1/graphs/{}/members\", graph_id);\n    let response = relay_client.get(&endpoint).send().await?;\n    response.json::<Vec<MemberInfo>>().await\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Identity Discovery Specification authorizes REST API endpoints over TLS to query collaborator membership for decentralized graph synchronization.",
+      "PASS: The Relay Specification permits direct GraphId member enumeration whenever requests include a valid administrative session token.",
+      "FAIL: The Identity Discovery Specification strictly forbids querying by GraphId on relays; discovery must use opaque one-way Lakshana tokens to prevent graph correlation.",
+      "FAIL: The Akshara Network Architecture mandates that member queries must be executed over WebSocket subscriptions rather than standard HTTP REST endpoints."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_05_http_header_authorization",
+    "input": "**PR Title:** `feat(transport): send HTTP Bearer authorization header to relay`\n**Motivation:** Authenticate edge sync requests by passing a user JWT token in the HTTP Authorization header.\n\n```rust\npub async fn sync_with_relay(client: &HttpClient, relay_url: &str, user_token: &str, payload: &[u8]) -> Result<(), SyncError> {\n    client.post(relay_url)\n        .header(\"Authorization\", format!(\"Bearer {}\", user_token))\n        .body(payload.to_vec())\n        .send()\n        .await?;\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Transport Specification authorizes HTTP Bearer authorization headers to authenticate edge client sync requests against relay gateway endpoints.",
+      "PASS: The Synchronization Specification permits Bearer tokens provided user credentials are encrypted with the relay server public key.",
+      "FAIL: The Tiered Authority ADR forbids centralized bearer tokens; relays are untrusted transport nodes and authorization is verified client-side via decentralized cryptographic proofs.",
+      "FAIL: The Akshara Network Architecture mandates that relay authentication headers must use HTTP Digest auth rather than Bearer tokens."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_06_in_memory_plaintext_master_seed",
+    "input": "**PR Title:** `perf(vault): cache master seed in global OnceCell RwLock`\n**Motivation:** Store the decrypted master seed in a thread-safe global cache so background sync tasks don't have to repeatedly prompt for the password.\n\n```rust\nstatic MASTER_SEED_CACHE: OnceCell<RwLock<[u8; 64]>> = OnceCell::new();\n\npub fn cache_master_seed(seed: [u8; 64]) {\n    let _ = MASTER_SEED_CACHE.set(RwLock::new(seed));\n}\n\npub fn derive_background_key(path: &str) -> Result<SigningKey, VaultError> {\n    let guard = MASTER_SEED_CACHE.get().expect(\"initialized\").read().unwrap();\n    derive_slip0010_key(&*guard, path)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Vault Specification recommends caching master seeds in process memory to allow background synchronization tasks to derive keys without repeated password prompts.",
+      "PASS: The Identity Derivation Specification permits global seed caching provided the memory buffer is protected by a thread-safe read-write lock.",
+      "FAIL: The Tiered Authority ADR strictly forbids persistent master seed caching; master seeds are ephemeral and background tasks must exclusively use pre-derived executive keys.",
+      "FAIL: The Akshara Security Architecture mandates that cached master seeds must be stored in system environment variables rather than global static variables."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_07_eager_recursive_sync_download",
+    "input": "**PR Title:** `feat(sync): eager recursive sync for full offline availability`\n**Motivation:** Recursively download all parent manifests and payload blocks during sync to ensure full graph history is immediately available offline.\n\n```rust\npub async fn synchronize_graph(&mut self, remote_head: ManifestId) -> Result<(), SyncError> {\n    let mut queue = VecDeque::from([remote_head]);\n    while let Some(manifest_id) = queue.pop_front() {\n        let manifest = self.download_and_commit_manifest(&manifest_id).await?;\n        for parent in manifest.parents() {\n            queue.push_back(parent);\n        }\n        for block in manifest.referenced_blocks() {\n            self.download_and_store_payload(&block).await?;\n        }\n    }\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Synchronization Specification mandates eager recursive downloading of all historical manifests and payload blocks to guarantee full offline data availability.",
+      "PASS: The Client Sync Specification authorizes full DAG cloning whenever mobile devices connect over unmetered high-speed Wi-Fi networks.",
+      "FAIL: The Synchronization and Storage Specifications mandate Lazy Sync; only the latest manifest head is committed immediately, while historical blocks must be fetched on-demand.",
+      "FAIL: The Akshara Protocol mandates that historical manifests must be downloaded in parallel batches of exactly sixty-four blocks using BitTorrent wire framing."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_08_standard_compression_in_cbor",
+    "input": "**PR Title:** `perf(encoding): compress canonical CBOR blocks with zstd`\n**Motivation:** Compress CBOR blocks with zstd prior to storage to minimize disk space consumption.\n\n```rust\npub fn encode_and_compress_block<T: Serialize>(value: &T) -> Result<Vec<u8>, CodecError> {\n    let cbor_bytes = to_canonical_bytes(value)?;\n    let compressed = zstd::stream::encode_all(&cbor_bytes[..], 3)?;\n    Ok(compressed)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Representation Encoding Specification recommends Zstandard compression for serialized blocks to reduce storage footprint and peer-to-peer transport latency.",
+      "PASS: The Storage Interface Specification permits block-level compression provided the compression level does not exceed level 3.",
+      "FAIL: The Representation Encoding Specification strictly mandates canonical uncompressed DAG-CBOR to preserve universal bit-identical Content Identifiers across devices.",
+      "FAIL: The Akshara Codec Architecture mandates that compression must use the Brotli algorithm rather than Zstandard for browser compatibility."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "intent_violation_09_prune_losing_fork_after_merge",
+    "input": "**PR Title:** `feat(graph): prune losing fork branches after merge`\n**Motivation:** Delete losing manifest branches after a three-way merge to keep the local graph DAG clean and compact.\n\n```rust\npub async fn prune_merged_fork(&mut self, losing_head: ManifestId) -> Result<(), GraphError> {\n    self.store.delete_manifest_branch_recursive(&losing_head).await?;\n    self.unregister_head(&losing_head);\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Conflicts Specification recommends pruning abandoned fork branches after successful merges to reclaim disk capacity and keep manifest DAGs compact.",
+      "PASS: The Storage Semantics Specification permits branch deletion provided the winning merge manifest has been acknowledged by a relay sync response.",
+      "FAIL: The Change Tracking and Conflicts Specifications strictly forbid deleting fork branches; all divergent heads must remain permanently recorded in the DAG for auditability.",
+      "FAIL: The Akshara Graph Architecture mandates that abandoned branches must be exported as JSON archives before deletion from local storage."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_client_genesis_anchor_rebirth_invariant",
+    "input": "**PR Title:** `feat(graph): create graph genesis without identity anchor`\n**Motivation:** Allow creating standalone initial genesis manifests before the user has provisioned their device identity anchor.\n\n```rust\npub fn create_graph_genesis(author: &AuthorIdentity, initial_data: Block) -> Result<Manifest, GraphError> {\n    let mut manifest = Manifest::default();\n    manifest.content_root = initial_data.cid();\n    \n    manifest.identity_anchor = None;\n    manifest.sign(&author.executive_key())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: Violates Genesis Anchor Invariant. Every manifest (including genesis) must anchor to a valid Identity Graph CID; unanchored manifests break cryptographic provenance and must be rejected by storage and auditors.",
+      "FAIL: Violates Ephemeral Self-Signed Genesis. Genesis manifests may omit identity anchors to support anonymous peer discovery, binding to an identity only upon first sync.",
+      "FAIL: Violates Literal URI Encoding. Genesis manifests must embed a W3C did:key string literal in the header rather than an Identity Graph CID.",
+      "FAIL: Violates Notarized Root Architecture. Unanchored genesis manifests must be notarized by an on-chain smart contract transaction hash before distribution."
     ],
     "target": "A"
   },
   {
-    "id": "trap_47_aead_context",
-    "input": "A developer encrypts a block payload using ChaCha20-Poly1305 with an empty Associated Data (AD) field.\n\n```rust\npub fn encrypt_block(payload: &[u8]) -> Vec<u8> {\n    // Standard AEAD encryption with empty Associated Data\n    chacha20_poly1305_encrypt(payload, &NONCE, b\"\")\n}\n```",
+    "id": "audit_fortress_rule_cidv0_backward_compat",
+    "input": "**PR Title:** `feat(address): parse both CIDv0 and CIDv1 external identifiers`\n**Motivation:** Support legacy IPFS CIDv0 hashes in address parsing to maintain backward compatibility with external tools.\n\n```rust\npub fn parse_external_id(input: &str) -> Result<Address, AksharaError> {\n    let cid = Cid::from_str(input)\n        .map_err(|_| AksharaError::Integrity(IntegrityError::MalformedId))?;\n    \n    if cid.version() == cid::Version::V1 || cid.version() == cid::Version::V0 {\n        Ok(Address::from(cid))\n    } else {\n        Err(AksharaError::Integrity(IntegrityError::MalformedId))\n    }\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Crypto Composition spec mandates that Associated Data MUST include the GraphID, Author Key, and Previous CID to bind the ciphertext to its specific causal context.",
-      "FAIL: The Akshara Cryptography ADR requires the Associated Data to contain a Zero-Knowledge Proof (ZKP) verifying the author's identity state.",
-      "FAIL: The Akshara Hashing specification dictates that the Associated Data must contain the SHA3-512 hash of the graph's genesis block.",
-      "FAIL: The Akshara Security Model explicitly mandates empty Associated Data fields to strictly prevent side-channel metadata leakage."
+      "PASS: The Akshara Interoperability Specification permits CIDv0 addresses in decoders to maintain backward compatibility with external decentralized tooling.",
+      "PASS: The Akshara Storage Bridge ADR authorizes dual-version parsing provided the underlying digest algorithm uses cryptographic SHA-256.",
+      "FAIL: The Akshara Integrity ADR mandates The Fortress Rule: address parsing strictly permits CIDv1 only, rejecting CIDv0 to enforce multicodec encapsulation and strict block-type isolation.",
+      "FAIL: The Akshara Representation Specification mandates that legacy CIDv0 addresses must be encapsulated in an explicit Multicodec 0x70 protobuf envelope."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_fulfillment_topological_order",
+    "input": "**PR Title:** `perf(sync): reverse stream delta blocks before manifest seal`\n**Motivation:** Stream missing data blocks in reverse order from storage nodes so leaf chunks arrive before parent index blocks.\n\n```rust\npub async fn stream_portion_delta(sink: &mut PortionSink, missing_cids: &[Cid], store: &StorageNode) -> Result<(), SyncError> {\n    \n    for cid in missing_cids.iter().rev() {\n        let block = store.get_block(cid).await?;\n        sink.send_amsha(block).await?;\n    }\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: Violates Reverse Topological Ordering (Head-First). Streaming must emit the manifest seal and root indices first so the receiver can verify authorization and provenance before ingesting child blocks.",
+      "FAIL: Violates Leaf-First Topological Ordering. Streaming must emit data blocks first so the receiver can compute bottom-up Merkle root hashes before accepting the manifest seal.",
+      "FAIL: Violates Breadth-First Level Streaming. Streaming must emit blocks level-by-level starting from directory roots to build the file hierarchy skeleton before streaming data blocks.",
+      "FAIL: Violates Interleaved Stream Multiplexing. Manifest seals and child data blocks must be multiplexed simultaneously across distinct QUIC streams with byte-range priority weighting."
     ],
     "target": "A"
   },
   {
-    "id": "trap_48_tie_breaker",
-    "input": "A developer implements the deterministic tie-breaker for AutoMerge by comparing the logical clocks of the divergent heads.\n\n```rust\npub fn break_tie(head1: Manifest, head2: Manifest) -> Manifest {\n    // Standard deterministic tie-breaker using logical clocks\n    if head1.clock > head2.clock { head1 } else { head2 }\n}\n```",
+    "id": "audit_identity_blind_identifier_prefix",
+    "input": "**PR Title:** `feat(identity): derive Blind Identity ID from master public key hash`\n**Motivation:** Generate user identity identifiers by hashing the master public key with the standard identity domain prefix.\n\n```rust\npub fn derive_blind_identity_id(master_pk: &PublicKey) -> IdentityId {\n    let mut hasher = Sha256::new();\n    hasher.update(b\"sovereign.v1.identity\");\n    hasher.update(master_pk.as_bytes());\n    let digest = hasher.finalize();\n    IdentityId::from_bytes(&digest)\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Causality & Time spec strictly mandates that tie-breaking MUST be resolved by comparing the lexicographical byte value of the conflicting Manifest CIDs.",
-      "FAIL: The Akshara Reconciliation ADR requires tie-breaking to be performed by hashing the author's public key with a verifiable delay function (VDF).",
-      "FAIL: The Akshara Conflict Resolution blueprint mandates the use of Hybrid Logical Clocks (HLC) to ensure mathematically deterministic conflict resolution.",
-      "FAIL: The Akshara Tie-Breaker spec dictates that the branch with the deepest Merkle tree depth automatically wins the conflict."
+      "PASS: The Akshara Routing Specification authorizes domain-tagged identity hashing to ensure uniform routing key distribution across Kademlia DHT nodes.",
+      "FAIL: The Akshara Privacy Architecture mandates that relay routing identifiers must be rotated dynamically per session rather than derived from master keys.",
+      "FAIL: The Akshara Cryptography ADR requires identity derivation to use BLAKE3-KDF rather than domain-prefixed SHA-256.",
+      "PASS: The Akshara Identity Graph ADR strictly mandates Blind Identifiers: deriving IdentityId by hashing master_pk with domain separation tags protects user anonymity against storage relays."
+    ],
+    "target": "D"
+  },
+  {
+    "id": "audit_identity_graph_swap_attack",
+    "input": "**PR Title:** `feat(publishing): cross-tenant manifest publishing with shared anchor`\n**Motivation:** Allow a user to sign a manifest in their tenant graph while referencing an anchor from an external partner graph.\n\n```rust\nlet manifest = Manifest::new(graph_id, root, vec![], alice_company_anchor, Address::null(), &bob_key, None);\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Akshara Multi-Tenant Specification allows external contractor keys to sign manifests anchored to an organization's identity graph to establish corporate provenance.",
+      "PASS: The Akshara Federation ADR authorizes cross-identity manifest anchoring to support guest author publishing across shared workspaces.",
+      "FAIL: The Akshara Identity Graph ADR mandates Identity Boundary Isolation: the signer's public key must resolve to an authorized credential within the designated identity_anchor DAG.",
+      "FAIL: The Akshara Collaborative Governance ADR requires that cross-organization manifests must be validated via an active 2-of-3 threshold signature from target company administrators."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_keyring_secret_branch_isolation",
+    "input": "**PR Title:** `feat(identity): derive cross-device sync keyring from Branch 4`\n**Motivation:** Derive the shared keyring secret strictly along BIP-32/SLIP-0010 Branch 4 for cross-device sync decryption.\n\n```rust\nlet keyring_path = format_akshara_path(BRANCH_KEYRING, version);\nlet keyring_secret = slip0010_derive(&master_seed, &keyring_path)?;\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: The Akshara Cryptography ADR requires that keyring derivation must use PBKDF2 directly over the user's master passphrase rather than BIP-44 child paths.",
+      "PASS: The Akshara Vault Specification authorizes Branch 4 derivation to enable hardware secure enclaves to cache shared cross-device sync credentials.",
+      "PASS: The Akshara Tiered Identity ADR mandates Branch Separation: Branch 4 (BRANCH_KEYRING) is strictly designated for cross-device shared vaults, isolating sync keys from per-graph content encryption (Branch 2).",
+      "FAIL: The Akshara Governance Architecture mandates that cross-device keyring secrets must be derived from Branch 0 (BRANCH_LEGISLATOR) to guarantee administrative recovery."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "audit_rebirth_inbox_reconciliation_first",
+    "input": "**PR Title:** `perf(rebirth): download graph data blocks before opening lockbox inbox`\n**Motivation:** Speed up device rebirth by downloading graph content in parallel before processing the recipient's pre-key lockbox inbox.\n\n```rust\npub async fn execute_rebirth(seed: &Mnemonic, relay: &RelayClient) -> Result<(), RebirthError> {\n    let executive = derive_executive_key(seed)?;\n    relay.download_graph_data_blocks().await?;\n    relay.fetch_and_open_lockboxes(&executive).await?;\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "FAIL: The Akshara Security Architecture requires device rebirth to be validated by a physical QR code exchange with an existing authorized peer device.",
+      "PASS: The Akshara High-Throughput Rebirth Specification permits downloading data blocks first to pre-fill the local filesystem cache while async lockbox decryption runs in parallel.",
+      "FAIL: The Akshara Knowledge Exchange Architecture strictly mandates the Three-Phase Rebirth sequence: Phase I (Inbox Reconciliation) and Phase II (Key Rebirth) must precede Phase III (Data Reconciliation); data blocks cannot be decrypted without the GraphKey from Lockboxes.",
+      "PASS: The Akshara Transport ADR authorizes content pre-fetching during device rebirth to minimize total sync wall-clock time."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "codebase_02_indefinite_length_streaming",
+    "input": "**PR Title:** `feat(encoding): stream byte chunks with indefinite-length CBOR framing`\n**Motivation:** Use CBOR indefinite-length byte strings (0x5f .. 0xff) to stream arbitrary chunk sequences without pre-computing total byte length.\n\n```rust\npub fn encode_byte_stream<W: Write>(writer: &mut W, chunks: &[&[u8]]) -> Result<(), CodecError> {\n    writer.write_all(&[0x5f])?;\n    for chunk in chunks {\n        encode_byte_slice(writer, chunk)?;\n    }\n    writer.write_all(&[0xff])?;\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Representation Encoding Specification authorizes CBOR indefinite-length streaming for chunked payloads exceeding standard buffer thresholds.",
+      "PASS: The Storage Semantics Specification permits indefinite byte streams to stream large attachments without requiring upfront length calculations.",
+      "FAIL: The Representation Encoding Specification strictly mandates definite-length encoding; indefinite-length streaming is prohibited to ensure deterministic canonical bytes.",
+      "FAIL: The Akshara Representation Specification mandates that chunked byte streams must be encoded as multipart MIME envelopes rather than CBOR arrays."
+    ],
+    "target": "C"
+  },
+  {
+    "id": "codebase_03_map_key_lexicographical_order",
+    "input": "**PR Title:** `feat(encoding): serialize canonical CBOR maps with sorted keys`\n**Motivation:** Sort map keys lexicographically before serializing to ensure bit-identical canonical byte output across devices.\n\n```rust\npub fn encode_canonical_map<W: Write>(writer: &mut W, entries: &BTreeMap<Vec<u8>, Vec<u8>>) -> Result<(), CodecError> {\n    encode_map_header(writer, entries.len() as u64)?;\n    for (k, v) in entries {\n        writer.write_all(k)?;\n        writer.write_all(v)?;\n    }\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
+    "choices": [
+      "PASS: The Representation Encoding Specification mandates that map keys must be sorted lexicographically based on their encoded binary representation.",
+      "PASS: The Storage Interface Specification permits BTreeMap serialization whenever key lengths are constrained to fixed 32-byte hash digests.",
+      "FAIL: The Representation Encoding Specification mandates that map keys must be serialized in field declaration order to preserve semantic schema layouts.",
+      "FAIL: The Akshara Codec Architecture mandates that map keys must be hashed with MurmurHash3 to establish hash-table index layouts in serialized blocks."
     ],
     "target": "A"
   },
   {
-    "id": "trap_53_cbor_maps",
-    "input": "A developer serializes an index block map using standard JSON to ensure client cross-compatibility.\n\n```rust\nlet index_map = serde_json::to_vec(&file_map).unwrap();\n// Standard JSON serialization for universal readability\nlet cid = store.put_block(\"akshara.index.v1\", &index_map);\n```",
+    "id": "codebase_07_staging_coalesce_delete_override",
+    "input": "**PR Title:** `perf(staging): group staged operations by path in BTreeMap`\n**Motivation:** Coalesce uncommitted operations by path in memory to simplify transaction replay.\n\n```rust\npub fn coalesce_operations(operations: Vec<StagedOperation>) -> Vec<StagedOperation> {\n    let mut by_path: BTreeMap<String, Vec<StagedOperation>> = BTreeMap::new();\n    for op in operations {\n        by_path.entry(op.path().to_string()).or_default().push(op);\n    }\n    by_path.into_values().flatten().collect()\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Merkle Indexing Explainer explicitly mandates the use of CBOR (`serde_cbor`) for all Index Blocks to ensure binary efficiency and strict key sorting.",
-      "FAIL: The Akshara Graph Model requires all Index Blocks to be serialized using Protocol Buffers (protobuf) to enforce strict backwards compatibility.",
-      "FAIL: The Akshara Interoperability ADR explicitly mandates Cap'n Proto serialization to enable zero-copy reads from the memory-mapped database.",
-      "FAIL: The Akshara API Design Principles require the use of FlatBuffers to ensure index maps can be read without heap allocation."
+      "PASS: The Change Tracking Specification authorizes retaining all staged intermediate edits to compile granular history timelines upon manifest commit.",
+      "PASS: The Staging Store Specification permits operation preservation to support selective rollback of individual document field mutations.",
+      "FAIL: The Client and Graph Specification mandates path coalescing where later operations to a path replace earlier ones and delete clears prior operations.",
+      "FAIL: The Akshara State Architecture mandates that staged operations must be coalesced using an Operational Transformation matrix rather than path maps."
     ],
-    "target": "A"
+    "target": "C"
   },
   {
-    "id": "trap_55_timing_attacks",
-    "input": "A developer overrides the default cipher suite, arguing that AES-GCM is hardware-accelerated and therefore superior for the mobile app.\n\n```rust\n// Switch to AES-GCM because it benefits from ARM hardware acceleration\nlet cipher_suite = CipherSuite::Aes256Gcm;\n```",
+    "id": "codebase_10_manifest_schema_anchor_binding",
+    "input": "**PR Title:** `refactor(manifest): compute manifest header hash`\n**Motivation:** Hash graph_id, content_root, parents, identity_anchor, and author public key into the manifest header identifier.\n\n```rust\npub fn compute_header_id(header: &ManifestHeader, author: &SigningPublicKey) -> ManifestId {\n    let mut hasher = Sha256::new();\n    hasher.update(header.graph_id.as_bytes());\n    hasher.update(header.content_root.as_ref());\n    for parent in &header.parents {\n        hasher.update(parent.as_ref());\n    }\n    hasher.update(header.identity_anchor.as_ref());\n    hasher.update(author.as_bytes());\n    hasher.update(header.created_at.to_le_bytes());\n    ManifestId::from_sha256(&hasher.finalize())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Crypto Composition spec rejects AES precisely because it is dangerous in software-only environments (timing attacks). ChaCha20 is mandated for edge devices.",
-      "FAIL: The Akshara Hashing specification requires the use of the AES-SIV (Synthetic Initialization Vector) mode to absolutely prevent nonce misuse.",
-      "FAIL: The Akshara Security Model mandates the use of XSALSA20 instead of AES to guarantee post-quantum cryptographic resistance.",
-      "FAIL: The Akshara Mobile Optimization ADR explicitly requires all cryptography to utilize Apple's Secure Enclave API (CryptoKit) for AES-GCM acceleration."
+      "PASS: The Snapshots Specification authorizes decoupling schema anchors from manifest header hashing to allow non-breaking runtime layout migrations.",
+      "PASS: The Graph Model Specification permits schema anchor omission when graph nodes adhere to core schema registry primitive layouts.",
+      "FAIL: The Snapshots Specification mandates that schema_anchor must be hashed into the manifest header identifier to cryptographically bind physical layout rules.",
+      "FAIL: The Akshara Manifest Architecture mandates that manifest hashing must include the full schema CBOR payload rather than an anchor address."
     ],
-    "target": "A"
+    "target": "C"
   },
   {
-    "id": "trap_58_client_memory",
-    "input": "A developer optimizes the SDK Client by loading the decrypted Master Seed into a long-lived memory struct to speed up bulk signatures.\n\n```rust\npub struct Client {\n    // Cache the unlocked master seed for high-throughput block signing\n    unlocked_seed: [u8; 32],\n}\n```",
+    "id": "codebase_15_prekey_direct_sqlite_storage",
+    "input": "**PR Title:** `feat(vault): persist ephemeral prekeys in local SQLite database`\n**Motivation:** Save generated ephemeral private pre-keys into SQLite so they survive client restarts.\n\n```rust\npub async fn store_ephemeral_private_key(db: &SqlitePool, key_id: &str, private_key: &[u8; 32]) -> Result<(), VaultError> {\n    sqlx::query(\"INSERT INTO prekeys (id, secret_key) VALUES (?1, ?2)\")\n        .bind(key_id)\n        .bind(private_key.as_slice())\n        .execute(db)\n        .await?;\n    Ok(())\n}\n```\n\nDoes this pull request satisfy the Akshara architectural rules?",
     "choices": [
-      "FAIL: The Client & Graph API spec strictly dictates that the Client must NOT hold secret keys in memory. The vault must be locked and cleared immediately after each operation.",
-      "FAIL: The Akshara Memory Safety blueprint requires the `unlocked_seed` to be stored inside an `mlock`ed memory buffer protected by an OS guard page.",
-      "FAIL: The Akshara Core Architecture mandates that memory caching must use a volatile `Drop` trait that overwrites the memory buffer with zeros upon exit.",
-      "FAIL: The Akshara High-Performance ADR dictates that the master seed must be offloaded to a dedicated HSM (Hardware Security Module) daemon."
+      "PASS: The Prekeys Specification authorizes storing ephemeral private keys in SQLite tables provided the host operating system disk volume is encrypted.",
+      "PASS: The Storage Semantics Specification permits database persistence of ephemeral keys to guarantee recovery if application processes crash unexpectedly.",
+      "FAIL: The Tiered Authority ADR and Prekeys Specification mandate that private prekeys must remain in volatile memory or the encrypted client vault partition.",
+      "FAIL: The Akshara Security Architecture mandates that ephemeral private keys must be stored in Apple Cloud Keychain rather than local storage engines."
     ],
-    "target": "A"
-  },
-  {
-    "id": "trap_59_block_0",
-    "input": "A developer implements graph moderation by writing a SQL script on the Relay to reject blocks from banned users.\n\n```rust\npub fn is_authorized(relay_db: &Database, block: &Block) -> bool {\n    // Standard Relay-side authorization check\n    !relay_db.is_banned(block.author)\n}\n```",
-    "choices": [
-      "FAIL: The Governance at the Edge spec dictates that Relays have no authority; the rules of the graph are immutably stored in Block 0 and are exclusively audited locally by the client SDK.",
-      "FAIL: The Akshara Trust Model requires moderation rules to be strictly enforced by consensus voting on the Kademlia DHT routing table.",
-      "FAIL: The Akshara Moderation ADR mandates that all ban lists must be maintained via a multi-signature smart contract deployed on the Ethereum blockchain.",
-      "FAIL: The Akshara Core Architecture dictates that server-side authorization checks must use a Zero-Knowledge Proof (zk-SNARK) rather than a SQL database."
-    ],
-    "target": "A"
-  },
-  {
-    "id": "trap_60_invitational",
-    "input": "A developer implements an Invitational group chat but forgets to issue separate 'Write' tokens to the invited members.\n\n```rust\npub fn invite_member(chat: &Graph, new_member: &Key) {\n    // Member is given the GraphKey (read access), but no Write Capability token\n    chat.share_key_with(new_member);\n}\n```",
-    "choices": [
-      "FAIL: The Akshara Access Control ADR strictly mandates that all peer-to-peer chats use Macaroons rather than UCANs to delegate Read and Write permissions.",
-      "FAIL: The Governance spec requires Invitational models to issue explicit `WriteCapability` UCAN tokens; sharing the GraphKey only grants Read access.",
-      "FAIL: The Akshara Trust Model dictates that all Write permissions must be approved by a 2/3rds supermajority vote of existing chat members.",
-      "FAIL: The Akshara Core Architecture requires invited members to stake a cryptographic bond (Proof of Stake) before Write permissions are granted."
-    ],
-    "target": "A"
-  },
-  {
-    "id": "trap_66_graph_naming",
-    "input": "A developer initializes a new collaborative workspace for a user.\n\n```rust\npub fn create_user_workspace(client: &Client, user_name: &str) -> Graph {\n    // Initialize a new collaborative workspace with a human-readable identifier\n    client.create_graph(GraphConfig {\n        name: format!(\"workspace_{}\", user_name),\n        ..Default::default()\n    })\n}\n```",
-    "choices": [
-      "FAIL: The protocol layer strictly isolates cryptographic identifiers from human-readable metadata, which must be managed externally by the application layer.",
-      "FAIL: The SDK requires all human-readable identifiers to be hashed using SHA3-256 before being passed to the initialization configuration.",
-      "FAIL: Workspace initialization mandates that strings are converted to UTF-16 to prevent Unicode collision attacks in the graph registry.",
-      "FAIL: The client configuration requires naming attributes to be signed by the root authority to prevent namespace hijacking."
-    ],
-    "target": "A"
-  },
-  {
-    "id": "trap_67_collection_appends",
-    "input": "A developer adds a new message to a sequential chat history.\n\n```rust\npub async fn add_message(graph: &Graph, chat_path: &str, message: &[u8]) {\n    // Append a new message to the end of the chat list\n    graph.push(chat_path, message).await.unwrap();\n}\n```",
-    "choices": [
-      "FAIL: The low-level byte-oriented handle delegates all fractional indexing and layout semantics to document-level adapters via macros.",
-      "FAIL: The network protocol requires lists to be appended using a CRDT-specific `lww_append` command to ensure conflict-free merges.",
-      "FAIL: Modifying sequential lists requires locking the path with a distributed semaphore to prevent race conditions during sync.",
-      "FAIL: The underlying datastore mandates that all sequential data be partitioned into fixed 4KB chunks before appending."
-    ],
-    "target": "A"
-  },
-  {
-    "id": "trap_69_graph_ref_eager",
-    "input": "A developer implements a cross-graph linking system to embed medical records.\n\n```rust\npub fn store_cross_reference(graph: &Graph, target: &str) -> GraphRef {\n    // Create a cross-graph reference and eagerly fetch the target payload \n    // to cache it for faster future reads.\n    let reference = graph.link(target);\n    reference.prefetch();\n    reference\n}\n```",
-    "choices": [
-      "FAIL: Cross-boundary pointers are strictly lightweight structural handles. Data extraction requires an explicit, asynchronous cryptographic walk of the target index.",
-      "FAIL: The caching specification mandates that eager data retrieval must be offloaded to a Redis-compatible in-memory proxy.",
-      "FAIL: Eager payload fetching requires the user to submit a zero-knowledge proof of authorization before traversing the boundary.",
-      "FAIL: The protocol layer forbids eager evaluation because the network routing table must establish a new WebSocket per fetch."
-    ],
-    "target": "A"
+    "target": "C"
   }
 ]
