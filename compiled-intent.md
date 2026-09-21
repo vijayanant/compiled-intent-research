@@ -18,7 +18,7 @@ abstract: |
   
   Indexing source code syntax fails to resolve this. Code reflects existing implementation, but it does not capture architectural rationale, trade-offs, or structural invariants.
   
-  To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent—recorded in specifications, RFCs, and Architecture Decision Records (ADRs)—into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`) while reducing total context payload by over 94%. On adversarial test cases, isolating normative constraints raises enforcement accuracy by 12.8 to 17.9 percentage points over whole-document stuffing by eliminating non-normative rationalization loopholes.
+  To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent—recorded in specifications, RFCs, and Architecture Decision Records (ADRs)—into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`). It cuts context payload by 64.3% against single-file oracle retrieval and by 94.6% against multi-specification stuffing. On adversarial test cases, isolating normative constraints raises enforcement accuracy by 12.8 to 17.9 percentage points over whole-document stuffing by eliminating non-normative rationalization loopholes.
 
   \keywords{Semantic Firewall, Architectural Intent, Coding Agents, Pre-Commit Interceptors, Context Window Efficiency, Retrieval-Augmented Generation.}
 ---
@@ -153,7 +153,7 @@ Empirical evaluation across all 117 benchmark items ($N=117$, temperature $T=0$)
 
 : Benchmark Accuracy on Qwen and Gemma: Task-level accuracy across 117 benchmark items ($N=117$). Values reported as Qwen 2.5 Coder (14B) / Gemma 3 (12B) at temperature $T=0$.
 
-Across both models, Compiled Intent matches or outperforms prompt stuffing and oracle baselines while reducing context size by over 94%. On Qwen 14B, Compiled Intent (87 correct) matches Prompt Stuffing (88 correct) within a single test question. On Gemma 3:12b, Compiled Intent reaches 84.2% overall (98 of 117), exceeding Prompt Stuffing (80.3%) and Oracle (75.2%).
+Across both models, Compiled Intent matches or outperforms prompt stuffing and oracle baselines while cutting context size by 64.3% against single-file oracle retrieval and 94.6% against subsystem stuffing. On Qwen 14B, Compiled Intent (87 correct) matches Prompt Stuffing (88 correct) within a single test question. On Gemma 3:12b, Compiled Intent reaches 84.2% overall (98 of 117), exceeding Prompt Stuffing (80.3%) and Oracle (75.2%).
 
 ## Operational Scaling: Cloud Economics and Local Hardware Limits
 
@@ -162,18 +162,20 @@ The complete Akshara architectural specification comprises over 65,000 words (ap
 
 To establish a workable baseline, we compromised by evaluating Prompt Stuffing in a **bounded** configuration. Rather than dumping the entire repository, we grouped specifications into relevant subsystem clusters (such as API, Governance, Cryptography, and Sync) averaging ~15,400 tokens per prompt (reaching up to 20,000 tokens on broader modules). This bounded baseline represents an idealized, human-curated best-case for prompt stuffing; in practice, developers rarely have the luxury of perfectly pre-clustered specification packages.
 
+Any token reduction measured against prompt stuffing naturally depends on how much text was stuffed in the first place. That makes stuffing an elastic target. The cleaner, more rigorous baseline is the single-file Oracle. In the Oracle setup, a human already knows the exact specification file containing the invariant and injects that single document (~2,100 tokens). Even against this idealized file-level baseline, Compiled Intent cuts token overhead by 64.3% (~750 tokens) by stripping out intra-file narratives, preambles, and mock interfaces. When evaluated against multi-specification subsystem clusters, the reduction reaches 94.6%.
+
 | Strategy | Avg. Input Context | Total Injected Tokens | Context Delta |
 | :--- | :---: | :---: | :---: |
 | **Zero Context** | ~250 tokens | ~33,000 tokens | Baseline |
 | **Oracle**   | ~2,100 tokens | ~245,000 tokens | 7.4$\times$ expansion |
 | **Prompt Stuffing** | ~15,400 tokens | ~1,880,000 tokens | 57$\times$ expansion |
-| **Compiled Intent** | **~750 tokens** | **~102,000 tokens** | **-94.6% reduction** |
+| **Compiled Intent** | **~750 tokens** | **~102,000 tokens** | **-64.3% vs. Oracle (-94.6% vs. Stuffing)** |
 
 : Context Footprint & Token Accounting: Injected token metrics reflect prompt overhead per query and cumulative volume across the 117 benchmark queries.
 
-![Efficiency and Accuracy Trade-Off: (a) Overall benchmark accuracy across Zero Context, Oracle, Prompt Stuffing, and Compiled Intent evaluated on Qwen 2.5 Coder (14B) and Gemma 3 (12B) ($N=117$). (b) Injected token payload comparison on a log scale, demonstrating a 94.6% reduction in context size (750 vs. 15,400 mean tokens) while maintaining high-fidelity enforcement.](build/figures/fig3_efficiency.pdf){width=85%}
+![Efficiency and Accuracy Trade-Off: (a) Overall benchmark accuracy across Zero Context, Oracle, Prompt Stuffing, and Compiled Intent evaluated on Qwen 2.5 Coder (14B) and Gemma 3 (12B) ($N=117$). (b) Injected token payload comparison on a log scale, demonstrating context compression (750 vs. 15,400 mean tokens) while maintaining high-fidelity enforcement.](build/figures/fig3_efficiency.pdf){width=85%}
 
-The 94.6% context reduction directly addresses the operational constraints of both deployment environments:
+This context reduction directly addresses the operational constraints of both deployment environments:
 
 * **Cloud CI/CD Pipelines:** In hosted environments, Prompt Stuffing consumed 1.88 million input tokens across just 117 benchmark reviews. For engineering teams running continuous integration across dozens of daily pull requests, this repetitive prompt payload creates runaway API costs and latency delays for documentation that is largely irrelevant to the diff. Collapsing the context to ~750 tokens makes continuous semantic auditing cost-effective at enterprise scale.
 * **Local Developer Workstations:** For teams requiring zero-egress enforcement (protecting proprietary IP without sending uncommitted diffs to third-party endpoints), holding a 15,000 to 20,000-token KV cache on local workstation memory introduces severe hardware strain. Continuous transformer prefill across large contexts kept compute cores fully saturated, repeatedly pushing execution times to 25–40 minutes per suite. Compiled Intent's compact payload removes this barrier, enabling instant, zero-egress pre-commit checks directly on developer machines.

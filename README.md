@@ -41,12 +41,14 @@ Empirical evaluation across all 117 benchmark items ($N=117$, temperature $T=0$)
 
 ### Table 2: Context Footprint & Token Accounting
 
-| Strategy | Avg. Input Context | Total Injected Tokens | Context Delta vs. Stuffing |
-| :--- | :---: | :---: | :---: |
-| **Zero Context** | ~250 tokens | ~33,000 tokens | Baseline floor |
-| **Oracle** | ~2,100 tokens | ~245,000 tokens | 7.4$\times$ expansion |
-| **Prompt Stuffing** | ~15,400 tokens | ~1,880,000 tokens | 57$\times$ expansion |
-| **Compiled Intent** | **~750 tokens** | **~102,000 tokens** | **-94.6% reduction** |
+| Strategy | Avg. Input Context | Total Injected Tokens | vs. Oracle (Whole-File) | vs. Prompt Stuffing |
+| :--- | :---: | :---: | :---: | :---: |
+| **Zero Context** | ~250 tokens | ~33,000 tokens | -88.1% | -98.4% |
+| **Oracle** | ~2,100 tokens | ~245,000 tokens | *Baseline* | -86.4% |
+| **Prompt Stuffing** | ~15,400 tokens | ~1,880,000 tokens | +633% | *Baseline* |
+| **Compiled Intent** | **~750 tokens** | **~102,000 tokens** | **-64.3%** | **-94.6%** |
+
+The token reduction measured against prompt stuffing naturally depends on how much text was stuffed in the first place. The more rigorous metric is the comparison against Oracle: even when a human pre-selects the exact governing file, feeding the whole document injects ~2,100 tokens. Compiled Intent cuts that payload by 64.3% (~750 tokens) by stripping out intra-file narratives, preambles, and mock interfaces.
 
 ---
 

@@ -26,7 +26,6 @@ logs/
 # Build Artifacts & Private Styling
 Makefile
 template.tex
-figures/
 build/
 *.pdf
 
