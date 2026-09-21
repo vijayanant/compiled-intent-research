@@ -1,10 +1,10 @@
 ---
 title: "Compiled Intent: Enforcing Architectural Invariants for LLM Coding Agents"
-version: "0.4.0"
-status: "draft"
+version: "1.0.0"
+status: "released"
 date: "September 2026"
 author: |
-  Vijay Anant\thanks{Evaluation benchmarks and research artifacts: \href{https://github.com/vijayanant/compiled-intent-research}{\texttt{github.com/vijayanant/compiled-intent-research}}.}  
+  Vijay Anant  
   \small LambdaMatters  
   \small \href{mailto:vijay@lambdamatters.com}{\texttt{vijay@lambdamatters.com}}
 colorlinks: true
@@ -207,6 +207,10 @@ Our diagnostic evaluation indicates that the ceiling is not the model's reasonin
 Beyond these four dynamics lies the absolute boundary: **deliberate semantic obfuscation**, where an author strips all architectural terminology from both commit metadata and code identifiers.
 
 This aligns directly with empirical findings in retrieval-augmented systems (e.g., Barnett et al., 2024): downstream task failures rarely stem from model reasoning inability, but from upstream retrieval breakdown. When the coprocessor surfaces the governing invariant, coding models enforce it with high reliability. When enforcement fails, the bottleneck is not LLM reasoning capacity, but our retrieval pipeline: connecting colloquial diff syntax to formal architectural invariants, and filtering out descriptive distractions without dropping normative rules. Decoupling architectural memory from the generation loop makes automated invariant enforcement practical everywhere—enabling zero-egress policy verification on developer workstations while slashing per-review token costs across enterprise CI/CD pipelines. Closing the remaining gap depends on sharpening how the coprocessor indexes and matches architectural intent.
+
+# Artifact Availability {.unnumbered}
+
+All empirical datasets, task suites, and the ArchEval benchmark harness are available at [github.com/vijayanant/compiled-intent-research](https://github.com/vijayanant/compiled-intent-research). The standalone engine implementation (v0.1.0) and Model Context Protocol (MCP) server are available at [github.com/vijayanant/compiled-intent](https://github.com/vijayanant/compiled-intent).
 
 # References {.unnumbered}
 

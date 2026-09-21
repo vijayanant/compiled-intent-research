@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this research or benchmark in your work, please cite it as below."
+authors:
+  - family-names: "Anant"
+    given-names: "Vijay"
+    affiliation: "LambdaMatters"
+    email: "vijay@lambdamatters.com"
+    website: "https://vijayanant.com"
+title: "Compiled Intent: Enforcing Architectural Invariants for LLM Coding Agents"
+version: 1.0.0
+date-released: 2026-09-21
+url: "https://github.com/vijayanant/compiled-intent-research"
