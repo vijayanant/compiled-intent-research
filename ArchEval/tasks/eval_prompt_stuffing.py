@@ -52,7 +52,6 @@ MAPPINGS = {
     "arch_intent_layer_0_zero_io": "blueprint/core/design-decisions/system-topology.md",
     "arch_intent_prekey_registry_mailbox": "blueprint/identity/asynchronous-registry.md",
     "arch_intent_crypto_composition_aead_context": "blueprint/core/internals/crypto-composition.md",
-
     # === pr_audit_reasoning_mcq.json (PR Audit) ===
     "audit_causal_authority_stale_anchor": "specs/identity/tiered-authority-adr.md",
     "audit_collection_fractional_indexing_adapter": "specs/graph-model/indices.md",
@@ -93,7 +92,6 @@ MAPPINGS = {
     "codebase_07_staging_coalesce_delete_override": "specs/api/client-and-graph.md",
     "codebase_10_manifest_schema_anchor_binding": "specs/graph-model/snapshots.md",
     "codebase_15_prekey_direct_sqlite_storage": "specs/sharing/prekeys.md",
-
     # === pr_audit_adversarial.json (Adversarial Traps) ===
     "adversarial_liar_trap_02": "specs/identity/tiered-authority-adr.md",
     "adversarial_liar_trap_05": "specs/api/sync.md",
@@ -136,19 +134,23 @@ MAPPINGS = {
     "adv_mimic_identity_tombstone": "specs/identity/lifecycle.md",
 }
 
+
 def load_dataset(filename):
     return json_dataset(
         os.path.join(BASE_DIR, "datasets", filename),
         FieldSpec(id="id", input="input", choices="choices", target="target"),
-        shuffle_choices=True
+        shuffle_choices=True,
     )
+
 
 def prepare_clusters(dataset_filename, is_pr=True):
     """
     Cluster the 39 questions into 3 batches of 13 items.
     For each batch, assemble the specification files needed by those 13 items.
     """
-    with open(os.path.join(BASE_DIR, "datasets", dataset_filename), "r", encoding="utf-8") as f:
+    with open(
+        os.path.join(BASE_DIR, "datasets", dataset_filename), "r", encoding="utf-8"
+    ) as f:
         items = json.load(f)
 
     file_to_items = defaultdict(list)
@@ -156,7 +158,9 @@ def prepare_clusters(dataset_filename, is_pr=True):
         needle = MAPPINGS.get(d["id"])
         file_to_items[needle].append(d)
 
-    sorted_files = sorted(file_to_items.keys(), key=lambda f: len(file_to_items[f]), reverse=True)
+    sorted_files = sorted(
+        file_to_items.keys(), key=lambda f: len(file_to_items[f]), reverse=True
+    )
     batches = [[], [], []]
     batch_files = [set(), set(), set()]
 
@@ -200,6 +204,7 @@ def prepare_clusters(dataset_filename, is_pr=True):
 
     return cluster_prompts, item_to_cluster
 
+
 @solver
 def inject_cluster_prompt(dataset_filename, is_pr=True):
     cluster_prompts, item_to_cluster = prepare_clusters(dataset_filename, is_pr)
@@ -213,26 +218,38 @@ def inject_cluster_prompt(dataset_filename, is_pr=True):
 
     return solve
 
+
 @task
 def stuffing_pr_audit():
     return Task(
         dataset=load_dataset("pr_audit_reasoning_mcq.json"),
-        plan=[inject_cluster_prompt("pr_audit_reasoning_mcq.json", is_pr=True), multiple_choice()],
-        scorer=choice()
+        plan=[
+            inject_cluster_prompt("pr_audit_reasoning_mcq.json", is_pr=True),
+            multiple_choice(),
+        ],
+        scorer=choice(),
     )
+
 
 @task
 def stuffing_adversarial():
     return Task(
         dataset=load_dataset("pr_audit_adversarial.json"),
-        plan=[inject_cluster_prompt("pr_audit_adversarial.json", is_pr=True), multiple_choice()],
-        scorer=choice()
+        plan=[
+            inject_cluster_prompt("pr_audit_adversarial.json", is_pr=True),
+            multiple_choice(),
+        ],
+        scorer=choice(),
     )
+
 
 @task
 def stuffing_trivia():
     return Task(
         dataset=load_dataset("mcq_retrieval.json"),
-        plan=[inject_cluster_prompt("mcq_retrieval.json", is_pr=False), multiple_choice()],
-        scorer=choice()
+        plan=[
+            inject_cluster_prompt("mcq_retrieval.json", is_pr=False),
+            multiple_choice(),
+        ],
+        scorer=choice(),
     )

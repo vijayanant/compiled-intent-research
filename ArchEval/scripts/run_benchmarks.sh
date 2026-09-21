@@ -12,37 +12,33 @@ cd "$(dirname "$0")/.."
 
 # 1. Virtual Environment Auto-Activation
 if [ -z "${VIRTUAL_ENV:-}" ]; then
-    if [ -f ".venv/bin/activate" ]; then
-        source .venv/bin/activate
-    else
-        echo "Error: Virtual environment (.venv) not found. Run ./setup.sh first." >&2
-        exit 1
-    fi
+  if [ -f ".venv/bin/activate" ]; then
+    source .venv/bin/activate
+  else
+    echo "Error: Virtual environment (.venv) not found. Run ./setup.sh first." >&2
+    exit 1
+  fi
 fi
 
 # 2. Check inspect CLI
-if ! command -v inspect &> /dev/null; then
-    echo "Error: 'inspect' CLI not found. Please activate your environment or run ./setup.sh." >&2
-    exit 1
+if ! command -v inspect &>/dev/null; then
+  echo "Error: 'inspect' CLI not found. Please activate your environment or run ./setup.sh." >&2
+  exit 1
 fi
 
-# 3. Check intent CLI (fall back to release build if present)
-if ! command -v intent &> /dev/null; then
-    LOCAL_INTENT="../../compiled-intent/target/release"
-    if [ -f "$LOCAL_INTENT/intent" ]; then
-        export PATH="$(cd "$LOCAL_INTENT" && pwd):$PATH"
-    else
-        echo "Error: 'intent' binary not found on PATH or in $LOCAL_INTENT." >&2
-        echo "Please build the engine with 'cargo build --release' inside compiled-intent." >&2
-        exit 1
-    fi
+# 3. Check intent CLI
+if ! command -v intent &>/dev/null; then
+  echo "Error: 'intent' binary not found on PATH." >&2
+  echo "Please install it via 'cargo install --git https://github.com/vijayanant/compiled-intent.git'" >&2
+  echo "or download a prebuilt binary from: https://github.com/vijayanant/compiled-intent/releases" >&2
+  exit 1
 fi
 
 # 4. Ollama Service & Models Pre-Flight Verification
-if ! curl -s http://localhost:11434/api/tags > /dev/null 2>&1; then
-    echo "Error: Ollama server is not reachable at http://localhost:11434." >&2
-    echo "Please launch Ollama with 'ollama serve' before running benchmarks." >&2
-    exit 1
+if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
+  echo "Error: Ollama server is not reachable at http://localhost:11434." >&2
+  echo "Please launch Ollama with 'ollama serve' before running benchmarks." >&2
+  exit 1
 fi
 
 MODEL="${1:-ollama/qwen2.5-coder:14b}"
@@ -51,19 +47,19 @@ echo "Target Model: $MODEL"
 OLLAMA_MODELS=$(curl -s http://localhost:11434/api/tags)
 CLEAN_MODEL_NAME="${MODEL#ollama/}"
 if ! echo "$OLLAMA_MODELS" | grep -q "$CLEAN_MODEL_NAME"; then
-    echo "Notice: Model '$CLEAN_MODEL_NAME' not found in Ollama. Pulling..."
-    ollama pull "$CLEAN_MODEL_NAME"
+  echo "Notice: Model '$CLEAN_MODEL_NAME' not found in Ollama. Pulling..."
+  ollama pull "$CLEAN_MODEL_NAME"
 fi
 
 if ! echo "$OLLAMA_MODELS" | grep -q "nomic-embed-text"; then
-    echo "Notice: Embedding model 'nomic-embed-text' not found in Ollama. Pulling..."
-    ollama pull nomic-embed-text
+  echo "Notice: Embedding model 'nomic-embed-text' not found in Ollama. Pulling..."
+  ollama pull nomic-embed-text
 fi
 
 # 5. Database Pre-Flight (Auto-Index if missing or requested)
 if [ ! -d ".intent_akshara_db" ] || [ "${2:-}" == "--reindex" ] || [ "${1:-}" == "--reindex" ]; then
-    echo "Initializing and indexing Akshara specifications into LanceDB..."
-    intent --config config/akshara_config.toml index datasets/akshara_specs
+  echo "Initializing and indexing Akshara specifications into LanceDB..."
+  intent --config config/akshara_config.toml index datasets/akshara_specs
 fi
 
 # 6. Teardown: Clean up old run logs to ensure clean matrix evaluation
