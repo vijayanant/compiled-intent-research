@@ -29,7 +29,6 @@ template.tex
 figures/
 build/
 *.pdf
-!/compiled-intent.pdf
 
 # OS generated files
 .DS_Store

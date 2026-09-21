@@ -1,7 +1,5 @@
 ---
 title: "Compiled Intent: Enforcing Architectural Invariants for LLM Coding Agents"
-series: "Compiled Intent"
-part: 1
 version: "0.4.0"
 status: "draft"
 date: "September 2026"
