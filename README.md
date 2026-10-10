@@ -69,7 +69,13 @@ uv sync
 # Or automated fallback for standard Python 3:
 # ./setup.sh
 
-# Run the complete 4x3 benchmark matrix (12 runs):
+# 1. Run a quick smoke test first:
+# We recommend running an individual test to estimate inference speed on your hardware
+# before committing to the full benchmark matrix.
+uv run inspect eval tasks/eval_rag_interceptor.py@rag_adversarial --model ollama/qwen2.5-coder:14b -T 0
+
+# 2. Run the full 4x3 benchmark matrix (12 runs):
+# Note: Execution time depends heavily on your local hardware (often upwards of an hour).
 ./scripts/run_benchmarks.sh
 
 # Or evaluate Gemma 3 (12B):
