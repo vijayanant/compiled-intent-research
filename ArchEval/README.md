@@ -46,8 +46,15 @@ ollama pull gemma3:12b
 
 ## Installation
 
-Setup requires Python 3.10+. The setup script initializes the environment using [`uv`](https://github.com/astral-sh/uv) if available, or automatically falls back to standard Python 3 `venv` and `pip`:
+Setup requires Python 3.10+.
 
+**Recommended (`uv`):**
+```bash
+uv sync
+```
+
+**Automated / Standard Python Setup:**
+If you prefer an automated setup or do not have `uv`, run `./setup.sh`. It detects `uv` automatically or creates a standard Python 3 virtual environment with `pip`:
 ```bash
 ./setup.sh
 ```
@@ -96,8 +103,10 @@ uv run inspect eval tasks/eval_oracle_rag.py@oracle_pr_audit --model ollama/qwen
 To parse and print the summary accuracy and token reduction matrix from the evaluation logs:
 
 ```bash
-source .venv/bin/activate
-python3 scripts/parse_results.py [model_name]
+uv run python scripts/parse_results.py [model_name]
+
+# Or, if using standard venv without uv:
+# source .venv/bin/activate && python3 scripts/parse_results.py [model_name]
 ```
 
 ### Interactive Log Inspection
@@ -105,8 +114,10 @@ python3 scripts/parse_results.py [model_name]
 All runs write native `.eval` trace logs to `logs/`. You can launch Inspect AI's visual dashboard to inspect individual prompts, retrieved chunks, and model reasoning chains:
 
 ```bash
-source .venv/bin/activate
-inspect view
+uv run inspect view
+
+# Or, if using standard venv without uv:
+# source .venv/bin/activate && inspect view
 ```
 
 ---

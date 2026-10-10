@@ -16,7 +16,7 @@ When teams attempt to enforce architectural constraints with AI, they usually re
 
 Indexing source code syntax fails to resolve this. Code reflects existing implementation, but it does not capture architectural rationale, trade-offs, or structural invariants.
 
-To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent—recorded in specifications, RFCs, and Architecture Decision Records (ADRs)—into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`). It cuts context payload by **64.3% against single-file oracle retrieval** and by **94.6% against multi-specification stuffing**. On adversarial test cases, isolating normative constraints **raises enforcement accuracy by 12.8 to 17.9 percentage points** over whole-document stuffing by eliminating non-normative rationalization loopholes (**The Ammunition Effect**).
+To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent (recorded in specifications, RFCs, and Architecture Decision Records) into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`). It cuts context payload by **64.3% against single-file oracle retrieval** and by **94.6% against multi-specification stuffing**. On adversarial test cases, isolating normative constraints **raises enforcement accuracy by 12.8 to 17.9 percentage points** over whole-document stuffing by eliminating non-normative rationalization loopholes (**The Ammunition Effect**).
 
 ---
 
@@ -87,11 +87,16 @@ ollama pull gemma3:12b
 ```
 
 ### 3. Setup Environment
-The setup script initializes the environment using [`uv`](https://github.com/astral-sh/uv) if installed, or automatically falls back to standard Python 3 `venv` and `pip`:
+Setup requires Python 3.10+. You can sync dependencies using [`uv`](https://github.com/astral-sh/uv), or run `./setup.sh`:
 
 ```bash
 cd ArchEval
-./setup.sh
+
+# Recommended (uv):
+uv sync
+
+# Automated / standard Python fallback:
+# ./setup.sh
 ```
 
 ### 4. Running Benchmarks
