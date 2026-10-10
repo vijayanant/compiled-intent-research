@@ -10,12 +10,17 @@ echo "================================================="
 # Move to the ArchEval root directory so paths work reliably
 cd "$(dirname "$0")/.."
 
-# 1. Virtual Environment Auto-Activation
+# 1. Environment & Runner Detection
 if [ -z "${VIRTUAL_ENV:-}" ]; then
-  if [ -f ".venv/bin/activate" ]; then
+  if command -v uv &>/dev/null; then
+    exec uv run "$0" "$@"
+  elif [ -f ".venv/bin/activate" ]; then
     source .venv/bin/activate
   else
-    echo "Error: Virtual environment (.venv) not found. Run ./setup.sh first." >&2
+    echo "Error: No Python environment detected." >&2
+    echo "Please either:" >&2
+    echo "  1. Install uv (recommended): https://docs.astral.sh/uv/" >&2
+    echo "  2. Or run: ./setup.sh" >&2
     exit 1
   fi
 fi
@@ -26,12 +31,21 @@ if ! command -v inspect &>/dev/null; then
   exit 1
 fi
 
-# 3. Check intent CLI
+# 3. Check intent CLI & Version
 if ! command -v intent &>/dev/null; then
   echo "Error: 'intent' binary not found on PATH." >&2
-  echo "Please install it via 'cargo install --git https://github.com/vijayanant/compiled-intent.git'" >&2
+  echo "Please install it via 'cargo install --git https://github.com/vijayanant/compiled-intent.git --tag v0.1.0'" >&2
   echo "or download a prebuilt binary from: https://github.com/vijayanant/compiled-intent/releases" >&2
   exit 1
+fi
+
+INTENT_VER=$(intent --version 2>/dev/null || echo "unknown")
+echo "Using intent coprocessor: $(which intent) ($INTENT_VER)"
+if [ "$INTENT_VER" != "intent 0.1.0" ]; then
+  echo "Notice: The ArchEval benchmark suite requires intent 0.1.0." >&2
+  echo "Detected: $INTENT_VER" >&2
+  echo "To install the verified release, run:" >&2
+  echo "  cargo install --git https://github.com/vijayanant/compiled-intent.git --tag v0.1.0 --force" >&2
 fi
 
 # 4. Ollama Service & Models Pre-Flight Verification
@@ -42,6 +56,9 @@ if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then
 fi
 
 MODEL="${1:-ollama/qwen2.5-coder:14b}"
+if [[ "$MODEL" != *"/"* ]]; then
+  MODEL="ollama/$MODEL"
+fi
 echo "Target Model: $MODEL"
 
 OLLAMA_MODELS=$(curl -s http://localhost:11434/api/tags)

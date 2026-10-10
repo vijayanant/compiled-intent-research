@@ -13,11 +13,11 @@ It empirically measures architectural constraint adherence, prompt token footpri
 The harness queries the `intent` coprocessor runtime to evaluate hybrid AST retrieval. You must have the `intent` CLI installed and available in your `PATH`:
 
 ```bash
-# Install directly from the compiled-intent repository:
-cargo install --git https://github.com/vijayanant/compiled-intent.git
+# Install directly from the compiled-intent repository (pinned to v0.1.0):
+cargo install --git https://github.com/vijayanant/compiled-intent.git --tag v0.1.0
 
 # Verify installation:
-intent --help
+intent --version
 ```
 
 ### 2. Ollama & Embedding Model

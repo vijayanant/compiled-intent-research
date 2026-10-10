@@ -1,5 +1,6 @@
 # Compiled Intent: Enforcing Architectural Invariants for LLM Coding Agents
 
+[![Release](https://img.shields.io/badge/Release-v1.0.0-blue.svg)](https://github.com/vijayanant/compiled-intent-research/releases/tag/v1.0.0)
 [![Technical Report (PDF)](https://img.shields.io/badge/Report-Download%20PDF-blue.svg)](https://github.com/vijayanant/compiled-intent-research/releases/latest/download/compiled-intent.pdf)
 [![Engine Implementation](https://img.shields.io/badge/Engine-intent%20v0.1.0-orange.svg)](https://github.com/vijayanant/compiled-intent)
 [![Research Lab](https://img.shields.io/badge/Lab-LambdaMatters-black.svg)](https://lambdamatters.com)
@@ -15,7 +16,7 @@ When teams attempt to enforce architectural constraints with AI, they usually re
 
 Indexing source code syntax fails to resolve this. Code reflects existing implementation, but it does not capture architectural rationale, trade-offs, or structural invariants.
 
-To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent—recorded in specifications, RFCs, and Architecture Decision Records (ADRs)—into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`) while **reducing total context payload by over 94%**. On adversarial test cases, isolating normative constraints **raises enforcement accuracy by 12.8 to 17.9 percentage points** over whole-document stuffing by eliminating non-normative rationalization loopholes (**The Ammunition Effect**).
+To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent—recorded in specifications, RFCs, and Architecture Decision Records (ADRs)—into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`). It cuts context payload by **64.3% against single-file oracle retrieval** and by **94.6% against multi-specification stuffing**. On adversarial test cases, isolating normative constraints **raises enforcement accuracy by 12.8 to 17.9 percentage points** over whole-document stuffing by eliminating non-normative rationalization loopholes (**The Ammunition Effect**).
 
 ---
 
@@ -70,7 +71,7 @@ All benchmark datasets, tasks, and evaluation runners are self-contained in the 
 The benchmark harness queries the `intent` coprocessor engine for AST-bounded hybrid search. Install the engine directly from the [compiled-intent](https://github.com/vijayanant/compiled-intent) repository:
 
 ```bash
-cargo install --git https://github.com/vijayanant/compiled-intent.git
+cargo install --git https://github.com/vijayanant/compiled-intent.git --tag v0.1.0
 ```
 
 ### 2. Pull Ollama Embedding & Models

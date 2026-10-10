@@ -1,0 +1,12 @@
+[project]
+name = "archeval"
+version = "1.0.0"
+description = "Compiled Intent: ArchEval Benchmark Suite"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "inspect_ai>=0.3.50",
+    "lancedb>=0.17.0",
+    "openai>=1.50.0",
+    "ollama>=0.3.0",
+]

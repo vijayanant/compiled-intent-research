@@ -26,12 +26,7 @@ fi
 # 3. Setup Python Virtual Environment
 if command -v uv &> /dev/null; then
     echo "Using uv for fast virtual environment setup..."
-    if [ ! -d ".venv" ]; then
-        uv venv .venv
-    fi
-    source .venv/bin/activate
-    echo "Installing dependencies via uv..."
-    uv pip install -r requirements.txt
+    uv sync
 else
     echo "Using standard Python venv & pip..."
     if [ ! -d ".venv" ]; then
@@ -60,7 +55,7 @@ if command -v intent &> /dev/null; then
     fi
 else
     echo "Note: 'intent' binary not found on PATH."
-    echo "Install via: cargo install --git https://github.com/vijayanant/compiled-intent.git"
+    echo "Install via: cargo install --git https://github.com/vijayanant/compiled-intent.git --tag v0.1.0"
     echo "Or download prebuilt binary from: https://github.com/vijayanant/compiled-intent/releases"
 fi
 
