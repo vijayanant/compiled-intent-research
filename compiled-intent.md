@@ -1,8 +1,8 @@
 ---
 title: "Compiled Intent: Enforcing Architectural Invariants for LLM Coding Agents"
-version: "1.0.0"
+version: "1.0.1"
 status: "released"
-date: "September 2026"
+date: "October 2026"
 author: |
   Vijay Anant  
   \small LambdaMatters  
