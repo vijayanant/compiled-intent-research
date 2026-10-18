@@ -63,7 +63,7 @@
             (Zero, 34.2)
             (Oracle, 75.2)
             (Stuffing, 75.2)
-            (Compiled, 74.4)
+            (Compiled, 79.5)
         };
         \addlegendentry{Qwen 2.5 Coder (14B)}
 
@@ -72,7 +72,7 @@
             (Zero, 46.6)
             (Oracle, 75.2)
             (Stuffing, 80.3)
-            (Compiled, 84.2)
+            (Compiled, 82.9)
         };
         \addlegendentry{\bfseries Gemma 3 (12B)}
 
@@ -114,11 +114,11 @@
             node[above, font=\scriptsize\bfseries] {2.1k};
 
         % Compiled Intent Tokens
-        \addplot[fill=SitePrimary, draw=SitePrimary!80!black] coordinates {(Compiled, 750)}
-            node[above, font=\scriptsize\bfseries\color{SitePrimary}] {750};
+        \addplot[fill=SitePrimary, draw=SitePrimary!80!black] coordinates {(Compiled, 820)}
+            node[above, font=\scriptsize\bfseries\color{SitePrimary}] {820};
 
         % Reduction annotation badges
-        \node[fill=SitePrimary!15!white, draw=SitePrimary, rounded corners=2pt, font=\tiny\bfseries\color{SitePrimary}, anchor=south] at (axis cs:Compiled, 1800) {$-$64\%};
+        \node[fill=SitePrimary!15!white, draw=SitePrimary, rounded corners=2pt, font=\tiny\bfseries\color{SitePrimary}, anchor=south] at (axis cs:Compiled, 1800) {$-$61\%};
 
     \end{axis}
 

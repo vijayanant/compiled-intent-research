@@ -24,7 +24,7 @@ def inject_intent_context():
     async def solve(state, generate_fn):
         question = state.user_prompt.text if state.user_prompt else state.input_text
         search_query = re.sub(r"```.*?```", "", question, flags=re.DOTALL).strip()
-        config_path = os.path.join(BASE_DIR, "config", "akshara_config.toml")
+        config_path = os.path.join(BASE_DIR, ".intent", "akshara.toml")
         try:
             result = subprocess.run(
                 [
@@ -32,10 +32,6 @@ def inject_intent_context():
                     "--config",
                     config_path,
                     "search",
-                    "--mode",
-                    "hybrid",
-                    "--limit",
-                    "3",
                     search_query,
                 ],
                 capture_output=True,

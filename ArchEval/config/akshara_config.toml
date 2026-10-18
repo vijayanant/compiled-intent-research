@@ -2,4 +2,4 @@ llama_endpoint = "http://localhost:11434/v1/embeddings"
 embedding_model = "nomic-embed-text:latest"
 embedding_dimensions = 768
 intent_dir = ".intent_akshara_db"
-lancedb_path = ".intent_akshara_db/lancedb"
+lancedb_path = "/Users/vj/workspace/blogging-assistant/compiled-intent-research/ArchEval/.intent_akshara_db/lancedb"

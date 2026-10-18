@@ -41,12 +41,6 @@ fi
 
 INTENT_VER=$(intent --version 2>/dev/null || echo "unknown")
 echo "Using intent coprocessor: $(which intent) ($INTENT_VER)"
-if [ "$INTENT_VER" != "intent 0.1.0" ]; then
-  echo "Notice: The ArchEval benchmark suite requires intent 0.1.0." >&2
-  echo "Detected: $INTENT_VER" >&2
-  echo "To install the verified release, run:" >&2
-  echo "  cargo install --git https://github.com/vijayanant/compiled-intent.git --tag v0.1.0 --force" >&2
-fi
 
 # 4. Ollama Service & Models Pre-Flight Verification
 if ! curl -s http://localhost:11434/api/tags >/dev/null 2>&1; then

@@ -18,14 +18,14 @@ abstract: |
   
   Indexing source code syntax fails to resolve this. Code reflects existing implementation, but it does not capture architectural rationale, trade-offs, or structural invariants.
   
-  To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent—recorded in specifications, RFCs, and Architecture Decision Records (ADRs)—into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~750 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`). It cuts context payload by 64.3% against single-file oracle retrieval and by 94.6% against multi-specification stuffing. On adversarial test cases, isolating normative constraints raises enforcement accuracy by 12.8 to 17.9 percentage points over whole-document stuffing by eliminating non-normative rationalization loopholes.
+  To enforce boundaries reliably, systems must index design intent. We present the **Compitent Engine** (Compiled Intent), an architectural coprocessor that compiles architectural intent (recorded in specifications, RFCs, and Architecture Decision Records [ADRs]) into an offline vector and full-text database. By retrieving compact, AST-bounded constraint chunks (~820 tokens) during code generation and pull request review, the engine matches or exceeds prompt stuffing across evaluated models (`qwen2.5-coder:14b` and `gemma3:12b`). It cuts context payload by 61.0% against single-file oracle retrieval and by 94.7% against multi-specification stuffing. On adversarial test cases, isolating normative constraints raises enforcement accuracy by 15.4 percentage points over whole-document oracle retrieval by eliminating non-normative rationalization loopholes.
 
   \keywords{Semantic Firewall, Architectural Intent, Coding Agents, Pre-Commit Interceptors, Context Window Efficiency, Retrieval-Augmented Generation.}
 ---
 
 # Introduction: Wikis Don't Compile
 
-Design decisions usually go to die in a wiki. Teams write specifications, design documents, and Architecture Decision Records (ADRs) to express **architectural intent**—the hard boundaries, design trade-offs, and invariants that preserve system integrity (such as "Never log user IDs" or "All cross-boundary calls go through the event bus"). But when a developer or an AI agent writes code, that intent remains inert text.
+Design decisions usually go to die in a wiki. Teams write specifications, design documents, and Architecture Decision Records (ADRs) to express **architectural intent**: the hard boundaries, design trade-offs, and invariants that preserve system integrity (such as "Never log user IDs" or "All cross-boundary calls go through the event bus"). But when a developer or an AI agent writes code, that intent remains inert text.
 
 Compilers catch syntax errors, and codebase indexers capture existing functions and types. But source code only reflects **what** the system currently does; it cannot capture **why** decisions were made or what patterns are forbidden. Static linters catch illegal package imports, but they cannot enforce semantic rules written in English. Meanwhile, PR review bots post generic stylistic comments that developers quickly learn to ignore.
 
@@ -98,7 +98,7 @@ We built **ArchEval** to evaluate zero-shot architectural enforcement. The bench
 * **PR Audits (Simulating Routine CI/CD Code Review, $N=39$):**  
   *Rationale:* In real engineering workflows, code never arrives in a vacuum. Developers submit pull requests with communicative context: Conventional Commit titles and short justifications. Passing naked diffs to an LLM creates an artificial guessing game. This track pairs realistic author intent with single-file code diffs to test whether the coprocessor can connect what the author *intended* to build with the governing architectural intent, verifying whether the patch actually obeys system invariants. Inputs are constrained to targeted single-file snippets to isolate retrieval fidelity directly, preventing compounding reasoning noise from multi-file diff parsing.
 * **Adversarial Traps (Simulating Human Rationalization, $N=39$):**  
-  *Rationale:* In practice, architectural drift rarely happens with an explicit confession. Instead, authors justify shortcuts with persuasive engineering arguments—such as skipping validation on cluster links to reduce latency under heavy load. Because LLMs are trained for helpfulness and agreeableness, they easily fall into rationalizing these exceptions. This track tests whether the coprocessor provides strict enough constraint boundaries to override the model's helpfulness bias and uphold invariants against human persuasion.
+  *Rationale:* In practice, architectural drift rarely happens with an explicit confession. Instead, authors justify shortcuts with persuasive engineering arguments, such as skipping validation on cluster links to reduce latency under heavy load. Because LLMs are trained for helpfulness and agreeableness, they easily fall into rationalizing these exceptions. This track tests whether the coprocessor provides strict enough constraint boundaries to override the model's helpfulness bias and uphold invariants against human persuasion.
 
 ## Evaluation Metric: Reasoning-Infused MCQs
 
@@ -120,7 +120,7 @@ To ensure deterministic, reproducible scoring, ArchEval uses **Reasoning-Infused
 
 All evaluations run on the UK AI Safety Institute's **Inspect AI** framework against a local `ollama` inference runtime at temperature $T=0$.
 
-A central thesis of this work is that prompt stuffing is fundamentally unsustainable—incurring runaway token costs on cloud APIs and exhausting memory bandwidth on local developer machines—while an architectural coprocessor collapses context bloat. The primary advantage of the coprocessor is on the **input context payload**: drastically reducing the prompt tokens loaded into the model's Key-Value (KV) cache during transformer prefill.
+A central thesis of this work is that prompt stuffing is fundamentally unsustainable (incurring runaway token costs on cloud APIs and exhausting memory bandwidth on local developer machines), while an architectural coprocessor collapses context bloat. The primary advantage of the coprocessor is on the **input context payload**: drastically reducing the prompt tokens loaded into the model's Key-Value (KV) cache during transformer prefill.
 
 For every evaluation query, the runtime records the exact prompt token count (`input_tokens`) from native model server telemetry. We report both the average input context per query (the active KV cache memory footprint) and the cumulative token payload across the full benchmark suite ($N=117$). Using server telemetry rather than wall-clock latency ensures measurements reflect pure prompt payload efficiency, free from confounding noise like hardware thermal throttling or background operating system tasks.
 
@@ -149,11 +149,11 @@ Empirical evaluation across all 117 benchmark items ($N=117$, temperature $T=0$)
 | **Zero Context** | 41.0% / 33.3% | 38.5% / 53.8% | 23.1% / 52.6% | 34.2% / 46.6% |
 | **Oracle** | 71.8% / 66.7% | 59.0% / 66.7% | 94.9% / 92.3% | 75.2% / 75.2% |
 | **Prompt Stuffing** | 64.1% / 74.4% | 69.2% / 69.2% | 92.3% / 97.4% | 75.2% / 80.3% |
-| **Compiled Intent** | **61.5% / 78.2%** | **71.8% / 84.6%** | **89.7% / 89.7%** | **74.4% / 84.2%** |
+| **Compiled Intent** | **69.2% / 79.5%** | **74.4% / 82.1%** | **94.9% / 87.2%** | **79.5% / 82.9%** |
 
 : Benchmark Accuracy on Qwen and Gemma: Task-level accuracy across 117 benchmark items ($N=117$). Values reported as Qwen 2.5 Coder (14B) / Gemma 3 (12B) at temperature $T=0$.
 
-Across both models, Compiled Intent matches or outperforms prompt stuffing and oracle baselines while cutting context size by 64.3% against single-file oracle retrieval and 94.6% against subsystem stuffing. On Qwen 14B, Compiled Intent (87 correct) matches Prompt Stuffing (88 correct) within a single test question. On Gemma 3:12b, Compiled Intent reaches 84.2% overall (98 of 117), exceeding Prompt Stuffing (80.3%) and Oracle (75.2%).
+Across both models, Compiled Intent matches or outperforms prompt stuffing and oracle baselines while cutting context size by 61.0% against single-file oracle retrieval and 94.7% against subsystem stuffing. On Qwen 14B, Compiled Intent reaches 79.5% overall (93 of 117), surpassing Prompt Stuffing (75.2%) and Oracle (75.2%). On Gemma 3:12b, Compiled Intent reaches 82.9% overall (97 of 117), exceeding Prompt Stuffing (80.3%) and Oracle (75.2%).
 
 ## Operational Scaling: Cloud Economics and Local Hardware Limits
 
@@ -162,27 +162,27 @@ The complete Akshara architectural specification comprises over 65,000 words (ap
 
 To establish a workable baseline, we compromised by evaluating Prompt Stuffing in a **bounded** configuration. Rather than dumping the entire repository, we grouped specifications into relevant subsystem clusters (such as API, Governance, Cryptography, and Sync) averaging ~15,400 tokens per prompt (reaching up to 20,000 tokens on broader modules). This bounded baseline represents an idealized, human-curated best-case for prompt stuffing; in practice, developers rarely have the luxury of perfectly pre-clustered specification packages.
 
-Any token reduction measured against prompt stuffing naturally depends on how much text was stuffed in the first place. That makes stuffing an elastic target. The cleaner, more rigorous baseline is the single-file Oracle. In the Oracle setup, a human already knows the exact specification file containing the invariant and injects that single document (~2,100 tokens). Even against this idealized file-level baseline, Compiled Intent cuts token overhead by 64.3% (~750 tokens) by stripping out intra-file narratives, preambles, and mock interfaces. When evaluated against multi-specification subsystem clusters, the reduction reaches 94.6%.
+Any token reduction measured against prompt stuffing naturally depends on how much text was stuffed in the first place. That makes stuffing an elastic target. The cleaner, more rigorous baseline is the single-file Oracle. In the Oracle setup, a human already knows the exact specification file containing the invariant and injects that single document (~2,100 tokens). Even against this idealized file-level baseline, Compiled Intent cuts token overhead by 61.0% (~820 tokens) by stripping out intra-file narratives, preambles, and mock interfaces. When evaluated against multi-specification subsystem clusters, the reduction reaches 94.7%.
 
 | Strategy | Avg. Input Context | Total Injected Tokens | Context Delta |
 | :--- | :---: | :---: | :---: |
 | **Zero Context** | ~250 tokens | ~33,000 tokens | Baseline |
 | **Oracle**   | ~2,100 tokens | ~245,000 tokens | 7.4$\times$ expansion |
 | **Prompt Stuffing** | ~15,400 tokens | ~1,880,000 tokens | 57$\times$ expansion |
-| **Compiled Intent** | **~750 tokens** | **~102,000 tokens** | **-64.3% vs. Oracle (-94.6% vs. Stuffing)** |
+| **Compiled Intent** | **~820 tokens** | **~96,000 tokens** | **-61.0% vs. Oracle (-94.7% vs. Stuffing)** |
 
 : Context Footprint & Token Accounting: Injected token metrics reflect prompt overhead per query and cumulative volume across the 117 benchmark queries.
 
-![Efficiency and Accuracy Trade-Off: (a) Overall benchmark accuracy across Zero Context, Oracle, Prompt Stuffing, and Compiled Intent evaluated on Qwen 2.5 Coder (14B) and Gemma 3 (12B) ($N=117$). (b) Injected token payload comparison on a log scale, demonstrating context compression (750 vs. 15,400 mean tokens) while maintaining high-fidelity enforcement.](build/figures/fig3_efficiency.pdf){width=85%}
+![Efficiency and Accuracy Trade-Off: (a) Overall benchmark accuracy across Zero Context, Oracle, Prompt Stuffing, and Compiled Intent evaluated on Qwen 2.5 Coder (14B) and Gemma 3 (12B) ($N=117$). (b) Injected token payload comparison on a log scale, demonstrating context compression (820 vs. 15,400 mean tokens) while maintaining high-fidelity enforcement.](build/figures/fig3_efficiency.pdf){width=85%}
 
 This context reduction directly addresses the operational constraints of both deployment environments:
 
-* **Cloud CI/CD Pipelines:** In hosted environments, Prompt Stuffing consumed 1.88 million input tokens across just 117 benchmark reviews. For engineering teams running continuous integration across dozens of daily pull requests, this repetitive prompt payload creates runaway API costs and latency delays for documentation that is largely irrelevant to the diff. Collapsing the context to ~750 tokens makes continuous semantic auditing cost-effective at enterprise scale.
+* **Cloud CI/CD Pipelines:** In hosted environments, Prompt Stuffing consumed 1.88 million input tokens across just 117 benchmark reviews. For engineering teams running continuous integration across dozens of daily pull requests, this repetitive prompt payload creates runaway API costs and latency delays for documentation that is largely irrelevant to the diff. Collapsing the context to ~820 tokens makes continuous semantic auditing cost-effective at enterprise scale.
 * **Local Developer Workstations:** For teams requiring zero-egress enforcement (protecting proprietary IP without sending uncommitted diffs to third-party endpoints), holding a 15,000 to 20,000-token KV cache on local workstation memory introduces severe hardware strain. Continuous transformer prefill across large contexts kept compute cores fully saturated, repeatedly pushing execution times to 25–40 minutes per suite. Compiled Intent's compact payload removes this barrier, enabling instant, zero-egress pre-commit checks directly on developer machines.
 
 ## The Ammunition Effect: Why Whole Documents Fail
 
-In traditional retrieval, providing a complete document is often assumed to be strictly superior to providing an isolated fragment. Our adversarial benchmark results directly contradict this assumption: on Adversarial Traps, providing the complete specification file (Oracle) dropped enforcement accuracy to 59.0% on Qwen and 66.7% on Gemma. In contrast, Compiled Intent reached 71.8% and 84.6%—outperforming the single-file oracle by 12.8 to 17.9 percentage points.
+In traditional retrieval, providing a complete document is often assumed to be strictly superior to providing an isolated fragment. Our adversarial benchmark results directly contradict this assumption: on Adversarial Traps, providing the complete specification file (Oracle) dropped enforcement accuracy to 59.0% on Qwen and 66.7% on Gemma. In contrast, Compiled Intent reached 74.4% and 82.1%, outperforming the single-file oracle by 15.4 percentage points on both models.
 
 This reveals a critical failure mode in automated code auditing: **the ammunition effect**.
 
@@ -190,17 +190,17 @@ Real architectural specifications are broad documents. In addition to hard invar
 
 AST-bounded injection eliminates this distraction. By isolating only the specific heading block defining the invariant (such as a strict mandate that verification is mandatory for all inbound portions regardless of peer identity), the coprocessor strips away peripheral prose. With no extraneous exceptions in context, the model evaluates the proposed diff directly against the invariant.
 
-![Intra-File Distraction vs. AST Header Isolation: (a) In whole-file stuffing (~2,200 tokens), self-attention disperses across peripheral preambles, mock interfaces, and legacy notes, diluting focus on the normative constraint. (b) In Compiled Intent (~750 tokens), the AST parser strips non-normative context, preventing peripheral prose from diluting normative constraints.](build/figures/fig4_attention_bleed.pdf){width=88%}
+![Intra-File Distraction vs. AST Header Isolation: (a) In whole-file stuffing (~2,200 tokens), self-attention disperses across peripheral preambles, mock interfaces, and legacy notes, diluting focus on the normative constraint. (b) In Compiled Intent (~820 tokens), the AST parser strips non-normative context, preventing peripheral prose from diluting normative constraints.](build/figures/fig4_attention_bleed.pdf){width=88%}
 
 ## Why Not 100%? The Retrieval Frontier
 
 A critical reader examining our benchmark results will naturally ask: *If Compiled Intent extracts the exact governing constraints, why isn't enforcement accuracy 100%? Is this a fundamental ceiling of LLM reasoning capacity?*
 
-Our diagnostic evaluation indicates that the ceiling is not the model's reasoning capacity. When the governing invariant is cleanly isolated in context, evaluated models enforce it with high fidelity. The gap to 100% stems almost entirely from upstream retrieval friction. While the coprocessor succeeds across the vast majority of tasks—as reflected in Gemma's 84.2% overall accuracy—analyzing the remaining failure cases reveals four structural challenges inherent to architectural retrieval:
+Our diagnostic evaluation indicates that the ceiling is not the model's reasoning capacity. When the governing invariant is cleanly isolated in context, evaluated models enforce it with high fidelity. The gap to 100% stems almost entirely from upstream retrieval friction. While the coprocessor succeeds across the vast majority of tasks (as reflected in Gemma's 82.9% and Qwen's 79.5% overall accuracy), analyzing the remaining failure cases reveals four structural challenges inherent to architectural retrieval:
 
 **Token Dominance and Semantic Drag.** When a query combines a high-level architectural component with a specific invariant, the dominant noun exerts disproportionate mathematical pull in embedding space. In our benchmark, queries regarding Merkle tree serialization formats repeatedly pulled retrieval toward `indices.md` (tree traversal logic), completely drowning out the intended rule in `serialization.md`.
 
-**The Scope Dilemma: Missing Context vs. Context Poisoning.** This is not a token budget concern—the coprocessor already reduces context by 95%. It is a compromise in prompt purity. In any cohesive codebase, core terms appear across dozens of files. Retrieving too few chunks (`limit = 1` or `limit = 3`) risks missing the governing rule entirely. But expanding retrieval to five or more chunks pulls in peripheral test mocks and non-normative notes, directly poisoning the active attention field and re-triggering the Ammunition Effect.
+**The Scope Dilemma: Missing Context vs. Context Poisoning.** This is not a token budget concern (the coprocessor already reduces context by 95%). It is a compromise in prompt purity. In any cohesive codebase, core terms appear across dozens of files. Retrieving too few chunks (`limit = 1` or `limit = 3`) risks missing the governing rule entirely. But expanding retrieval to five or more chunks pulls in peripheral test mocks and non-normative notes, directly poisoning the active attention field and re-triggering the Ammunition Effect.
 
 **Descriptive vs. Normative Vocabulary Collision.** Implementation specifications (describing *how* a module is structured) and Architecture Decision Records (mandating *what is forbidden*) share identical technical vocabularies. In our cryptographic test cases, queries frequently retrieved descriptive API specs (which confirmed the function call was syntactically valid), while crowding out the normative Governance ADR that explicitly forbade using that derivation branch.
 
@@ -208,7 +208,7 @@ Our diagnostic evaluation indicates that the ceiling is not the model's reasonin
 
 Beyond these four dynamics lies the absolute boundary: **deliberate semantic obfuscation**, where an author strips all architectural terminology from both commit metadata and code identifiers.
 
-This aligns directly with empirical findings in retrieval-augmented systems (e.g., Barnett et al., 2024): downstream task failures rarely stem from model reasoning inability, but from upstream retrieval breakdown. When the coprocessor surfaces the governing invariant, coding models enforce it with high reliability. When enforcement fails, the bottleneck is not LLM reasoning capacity, but our retrieval pipeline: connecting colloquial diff syntax to formal architectural invariants, and filtering out descriptive distractions without dropping normative rules. Decoupling architectural memory from the generation loop makes automated invariant enforcement practical everywhere—enabling zero-egress policy verification on developer workstations while slashing per-review token costs across enterprise CI/CD pipelines. Closing the remaining gap depends on sharpening how the coprocessor indexes and matches architectural intent.
+This aligns directly with empirical findings in retrieval-augmented systems (e.g., Barnett et al., 2024): downstream task failures rarely stem from model reasoning inability, but from upstream retrieval breakdown. When the coprocessor surfaces the governing invariant, coding models enforce it with high reliability. When enforcement fails, the bottleneck is not LLM reasoning capacity, but our retrieval pipeline: connecting colloquial diff syntax to formal architectural invariants, and filtering out descriptive distractions without dropping normative rules. Decoupling architectural memory from the generation loop makes automated invariant enforcement practical everywhere, enabling zero-egress policy verification on developer workstations while slashing per-review token costs across enterprise CI/CD pipelines. Closing the remaining gap depends on sharpening how the coprocessor indexes and matches architectural intent.
 
 # Artifact Availability {.unnumbered}
 
@@ -216,5 +216,5 @@ All empirical datasets, task suites, and the ArchEval benchmark harness are avai
 
 # References {.unnumbered}
 
-* **Barnett, S., Kurniawan, S., Thudumu, S., et al.** (2024). [*Seven Failure Points When Engineering a Retrieval Augmented Generation System*](https://arxiv.org/abs/2401.05856). In *Proceedings of the 3rd International Conference on AI Engineering — Software Engineering for AI (CAIN 2024)*.
+* **Barnett, S., Kurniawan, S., Thudumu, S., et al.** (2024). [*Seven Failure Points When Engineering a Retrieval Augmented Generation System*](https://arxiv.org/abs/2401.05856). In *Proceedings of the 3rd International Conference on AI Engineering: Software Engineering for AI (CAIN 2024)*.
 * **Liu, N. F., Lin, K., Hewitt, J., et al.** (2023). [*Lost in the Middle: How Language Models Use Long Contexts*](https://doi.org/10.1162/tacl_a_00638). Transactions of the Association for Computational Linguistics (TACL), 12, 157–173.
