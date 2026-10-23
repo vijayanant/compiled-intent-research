@@ -1,6 +1,6 @@
 ---
 title: "Compiled Intent: Enforcing Architectural Invariants for LLM Coding Agents"
-version: "1.0.1"
+version: "1.0.2"
 status: "released"
 date: "October 2026"
 author: |
@@ -27,7 +27,9 @@ abstract: |
 
 Design decisions usually go to die in a wiki. Teams write specifications, design documents, and Architecture Decision Records (ADRs) to express **architectural intent**: the hard boundaries, design trade-offs, and invariants that preserve system integrity (such as "Never log user IDs" or "All cross-boundary calls go through the event bus"). But when a developer or an AI agent writes code, that intent remains inert text.
 
-Compilers catch syntax errors, and codebase indexers capture existing functions and types. But source code only reflects **what** the system currently does; it cannot capture **why** decisions were made or what patterns are forbidden. Static linters catch illegal package imports, but they cannot enforce semantic rules written in English. Meanwhile, PR review bots post generic stylistic comments that developers quickly learn to ignore.
+Architecture research has a name for this drift: architectural decay (Perry & Wolf, 1992; Kruchten et al., 2012). Teams try to fight it by writing Architecture Decision Records (ADRs) to capture design rationale (Zimmermann, 2011). But in practice, automated compliance checking still stops at dumb static analysis (Pruijt et al., 2017). Linters catch an illegal package import or a circular dependency, but they are blind to plain English invariants.
+
+Modern AI coding tools try to fix this by indexing the whole repository (Code RAG) to pull in types, syntax trees, and call graphs across files (Zhang et al., 2023; Ding et al., 2023). But that misses the point. Existing code only tells you **what** the system already does, not **what is forbidden**. If your codebase already has hacks, tech debt, or bad habits, indexing that code just teaches the model to copy them. Meanwhile, PR review bots post generic stylistic comments that developers quickly learn to ignore.
 
 The current workaround with LLMs is prompt stuffing: dumping workspace rules, specifications, and style guides directly into the prompt. On cloud APIs, this is expensive and wasteful. On local developer workstations, it quickly becomes unusable. Storing tens of thousands of tokens in the Key-Value (KV) cache exhausts memory bandwidth, spikes time-to-first-token latency, and eventually triggers memory swap.
 
@@ -68,7 +70,7 @@ We resolve this by constructing an Apache Arrow `RecordBatch` where each row sto
 
 Technical specifications require two distinct search capabilities: conceptual matching (e.g., finding rules related to "data retention") and exact identifier resolution (e.g., finding the spec governing `SessionLedger` or `EcdsaSigner`). Pure vector search often fails on exact code symbols, while keyword search misses conceptual architectural principles.
 
-To resolve this, the engine uses LanceDB's native hybrid execution (`execute_hybrid`). It executes dense vector nearest-neighbor search alongside a Tantivy BM25 full-text query in a single query pipeline, normalizing and combining both score streams ($s / (s + 10)$ for BM25 and $1 - d$ for vector distance). This ensures exact symbol queries rank at the top, while conceptual queries still surface governing design rules.
+To fix this, the engine runs LanceDB's hybrid query pipeline (`execute_hybrid`). It runs dense vector search alongside a Tantivy BM25 full-text pass (Robertson & Zaragoza, 2009) in a single step, fusing both streams with Reciprocal Rank Fusion (Cormack et al., 2009). Because RRF ranks by position instead of raw score numbers, exact code identifiers stay pinned to the top without drowning out high-level design rules.
 
 ## Querying on Intent, Auditing on Code
 
@@ -118,7 +120,7 @@ To ensure deterministic, reproducible scoring, ArchEval uses **Reasoning-Infused
 
 ## Measurement Protocol & Token Accounting
 
-All evaluations run on the UK AI Safety Institute's **Inspect AI** framework against a local `ollama` inference runtime at temperature $T=0$.
+All evaluations run on the UK AI Safety Institute's **Inspect AI** framework against a local `ollama` runtime at temperature $T=0$. We benchmark across two open-weight models: `qwen2.5-coder:14b` (Hui et al., 2024) and `gemma3:12b`.
 
 A central thesis of this work is that prompt stuffing is fundamentally unsustainable (incurring runaway token costs on cloud APIs and exhausting memory bandwidth on local developer machines), while an architectural coprocessor collapses context bloat. The primary advantage of the coprocessor is on the **input context payload**: drastically reducing the prompt tokens loaded into the model's Key-Value (KV) cache during transformer prefill.
 
@@ -186,7 +188,7 @@ In traditional retrieval, providing a complete document is often assumed to be s
 
 This reveals a critical failure mode in automated code auditing: **the ammunition effect**.
 
-Real architectural specifications are broad documents. In addition to hard invariants, they contain mock testing interfaces, historical context, and protocol abstractions. When an adversarial pull request pairs non-compliant code with a plausible excuse (e.g., skipping verification on internal links to reduce CPU load), a whole-document prompt provides peripheral context that the model uses as ammunition to rationalize an exception. For example, reading about mock testing harnesses in a 3,500-word sync specification leads the model to infer that internal cluster links might also be exempt.
+We know from earlier research that LLMs lose track of facts in long prompts (Liu et al., 2023) and get derailed by irrelevant noise (Shi et al., 2023). But code review makes this worse. Real architectural specifications are broad documents. Along with hard rules, they contain mock testing interfaces, historical notes, and protocol abstractions. When an adversarial pull request pairs bad code with a plausible excuse (like skipping validation on internal links to save CPU), a whole document gives the model the exact ammunition it needs to rationalize the shortcut. For example, reading about mock testing harnesses in a 3,500-word sync spec leads the model to decide that internal cluster links can skip validation too.
 
 AST-bounded injection eliminates this distraction. By isolating only the specific heading block defining the invariant (such as a strict mandate that verification is mandatory for all inbound portions regardless of peer identity), the coprocessor strips away peripheral prose. With no extraneous exceptions in context, the model evaluates the proposed diff directly against the invariant.
 
@@ -217,4 +219,14 @@ All empirical datasets, task suites, and the ArchEval benchmark harness are avai
 # References {.unnumbered}
 
 * **Barnett, S., Kurniawan, S., Thudumu, S., et al.** (2024). [*Seven Failure Points When Engineering a Retrieval Augmented Generation System*](https://arxiv.org/abs/2401.05856). In *Proceedings of the 3rd International Conference on AI Engineering: Software Engineering for AI (CAIN 2024)*.
-* **Liu, N. F., Lin, K., Hewitt, J., et al.** (2023). [*Lost in the Middle: How Language Models Use Long Contexts*](https://doi.org/10.1162/tacl_a_00638). Transactions of the Association for Computational Linguistics (TACL), 12, 157–173.
+* **Cormack, G. V., Clarke, C. L., & Büttcher, S.** (2009). [*Reciprocal Rank Fusion outperforms Condorcet and individual rank learning methods*](https://doi.org/10.1145/1571941.1572114). In *Proceedings of the 32nd International ACM SIGIR Conference on Research and Development in Information Retrieval (SIGIR '09)*, 758–759.
+* **Ding, Y., Wang, Z., Ahmad, W. U., et al.** (2023). [*CrossCodeEval: A Diverse and Multilingual Benchmark for Cross-File Code Completion*](https://arxiv.org/abs/2310.11248). *Advances in Neural Information Processing Systems (NeurIPS 2023)*.
+* **Hui, B., Yang, J., Cui, Z., et al.** (2024). [*Qwen2.5-Coder Technical Report*](https://arxiv.org/abs/2409.12186). *arXiv preprint arXiv:2409.12186*.
+* **Kruchten, P., Nord, R. L., & Ozkaya, I.** (2012). [*Technical Debt: From Metaphor to Theory and Practice*](https://doi.org/10.1109/MS.2012.167). *IEEE Software*, 29(6), 18–21.
+* **Liu, N. F., Lin, K., Hewitt, J., et al.** (2023). [*Lost in the Middle: How Language Models Use Long Contexts*](https://doi.org/10.1162/tacl_a_00638). *Transactions of the Association for Computational Linguistics (TACL)*, 12, 157–173.
+* **Perry, D. E., & Wolf, A. L.** (1992). [*Foundations for the study of software architecture*](https://doi.org/10.1145/141874.141884). *ACM SIGSOFT Software Engineering Notes*, 17(4), 40–52.
+* **Pruijt, L., Köppe, C., van der Werf, J. M., & Brinkkemper, S.** (2017). [*The accuracy of dependency analysis in static architecture compliance checking*](https://doi.org/10.1002/spe.2421). *Software: Practice and Experience*, 47(2), 273–309.
+* **Robertson, S., & Zaragoza, H.** (2009). [*The Probabilistic Relevance Framework: BM25 and Beyond*](https://doi.org/10.1561/1500000019). *Foundations and Trends in Information Retrieval*, 4(1–2), 1–174.
+* **Shi, F., Chen, X., Misra, K., et al.** (2023). [*Large Language Models Can Be Easily Distracted by Irrelevant Context*](https://proceedings.mlr.press/v202/shi23a.html). In *Proceedings of the 40th International Conference on Machine Learning (ICML 2023)*, PMLR 202:31210–31227.
+* **Zhang, F., Chen, B., Zhang, Y., et al.** (2023). [*RepoCoder: Repository-Level Code Completion Through Iterative Retrieval and Generation*](https://doi.org/10.18653/v1/2023.emnlp-main.151). In *Proceedings of the 2023 Conference on Empirical Methods in Natural Language Processing (EMNLP 2023)*, 2471–2484.
+* **Zimmermann, O.** (2011). [*Architectural Decisions as Reusable Design Assets*](https://doi.org/10.1109/MS.2011.3). *IEEE Software*, 28(1), 64–69.
